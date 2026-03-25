@@ -18,7 +18,6 @@ ui <- fluidPage(
       input[type=number] { -moz-appearance: textfield; }
       .status-warning { color: red; font-weight: bold; margin-bottom: 10px; font-size: 0.85em; }
       .battle-log { background-color: #f8f9fa; border: 1px solid #ddd; padding: 15px; height: 500px; overflow-y: auto; font-family: 'Courier New', monospace; white-space: pre-wrap; }
-      /* 説明文の行間を詰める */
       .description-text { line-height: 1.2; margin-bottom: 20px; font-size: 1em; }
     ")),
     tags$script(HTML("
@@ -40,9 +39,15 @@ ui <- fluidPage(
       "すべて入力し終えたら，「チャレンジ開始!」ボタンを押してください．", br(),
       "「次のターンへ」ボタンを押すと，戦闘の様子が1ターンずつ表示されます．", br(),
       br(),
-      "参考資料", br(),
+      "参考資料：JBSクエストの記録", br(),
       tags$a(href="https://jbsmemorial.sakura.ne.jp/etc/quest1.html", "https://jbsmemorial.sakura.ne.jp/etc/quest1.html"), br(),
-      tags$a(href="https://jbsmemorial.sakura.ne.jp/etc/quest2.html", "https://jbsmemorial.sakura.ne.jp/etc/quest2.html")
+      tags$a(href="https://jbsmemorial.sakura.ne.jp/etc/quest2.html", "https://jbsmemorial.sakura.ne.jp/etc/quest2.html"), br(),
+      br(),
+      "注意事項：", br(),
+      "本ゲームは，JBSクエストの設定を参考にして，製作者がR言語を用いて作成したものです．", br(),
+      "JBSクエストのアルゴリズムは非公開ですので，本ゲームはJBSクエストを完全に再現したものではありません．", br(),
+      br(),
+      "製作者：", tags$a(href="https://researchmap.jp/mtakaha", "高橋 将宜")
   ),
   
   hr(),
@@ -116,8 +121,13 @@ server <- function(input, output, session) {
       if (runif(1, 0, 100) < def_unit$spd) {
         action_msg <- "しかし かわされた！"
       } else {
-        base_dmg <- max(0, (atk_unit$atk - (def_unit$def / 2)) / 2)
-        damage <- max(0, round(base_dmg + runif(1, -base_dmg/16, base_dmg/16)))
+        base_dmg <- (atk_unit$atk - (def_unit$def / 2)) / 2
+        damage <- round(base_dmg + runif(1, -abs(base_dmg)/16, abs(base_dmg)/16))
+        
+        if (damage <= 0 && atk_unit$atk > 0) {
+          damage <- if (runif(1) < 0.5) 1 else 0
+        }
+        
         def_unit$hp <- max(0, def_unit$hp - damage)
         action_msg <- paste0(damage, " のダメージを与えた！")
       }
