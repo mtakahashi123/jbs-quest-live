@@ -27,7 +27,7 @@ ui <- fluidPage(
     "))
   ),
   
-  h1("JBSクエストTribute"),
+  h1("JBSクエスト・トリビュート"),
   
   # --- ヘッダー ---
   div(class = "description-text",
