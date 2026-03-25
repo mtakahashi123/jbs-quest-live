@@ -113,7 +113,7 @@ server <- function(input, output, session) {
   execute_turn <- function() {
     c1 <- battle_state$c1; c2 <- battle_state$c2
     
-    # --- ターン開始時に生存チェックを行い、HPがなければ攻撃処理をスキップ ---
+    # --- ターン開始時に生存チェックを行い，HPがなければ攻撃処理をスキップ ---
     if (c1$hp > 0 && c2$hp > 0) {
       msg <- paste0("[ターン ", battle_state$turn, "]\n")
       order <- if ((c1$spd * runif(1)) >= (c2$spd * runif(1))) list(c1, c2) else list(c2, c1)
@@ -121,7 +121,8 @@ server <- function(input, output, session) {
       for (i in 1:2) {
         atk_unit <- order[[i]]; def_unit <- if(i==1) order[[2]] else order[[1]]
         if (atk_unit$hp <= 0) next
-        if (runif(1, 0, 100) < def_unit$spd) {
+        evasion_rate <- max(0, def_unit$spd - atk_unit$spd)
+        if (runif(1, 0, 100) < evasion_rate) {
           action_msg <- "しかし かわされた！"
         } else {
           base_dmg <- (atk_unit$atk - (def_unit$def / 2)) / 2
