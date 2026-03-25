@@ -27,7 +27,7 @@ ui <- fluidPage(
     "))
   ),
   
-  h1("JBSクエスト風ゲーム"),
+  h1("JBSクエストTribute"),
   
   # --- ヘッダー ---
   div(class = "description-text",
@@ -112,32 +112,35 @@ server <- function(input, output, session) {
   
   execute_turn <- function() {
     c1 <- battle_state$c1; c2 <- battle_state$c2
-    msg <- paste0("[ターン ", battle_state$turn, "]\n")
-    order <- if ((c1$spd * runif(1)) >= (c2$spd * runif(1))) list(c1, c2) else list(c2, c1)
     
-    for (i in 1:2) {
-      atk_unit <- order[[i]]; def_unit <- if(i==1) order[[2]] else order[[1]]
-      if (atk_unit$hp <= 0) next
-      if (runif(1, 0, 100) < def_unit$spd) {
-        action_msg <- "しかし かわされた！"
-      } else {
-        base_dmg <- (atk_unit$atk - (def_unit$def / 2)) / 2
-        damage <- round(base_dmg + runif(1, -abs(base_dmg)/16, abs(base_dmg)/16))
-        
-        if (damage <= 0 && atk_unit$atk > 0) {
-          damage <- if (runif(1) < 0.5) 1 else 0
+    # --- ターン開始時に生存チェックを行い、HPがなければ攻撃処理をスキップ ---
+    if (c1$hp > 0 && c2$hp > 0) {
+      msg <- paste0("[ターン ", battle_state$turn, "]\n")
+      order <- if ((c1$spd * runif(1)) >= (c2$spd * runif(1))) list(c1, c2) else list(c2, c1)
+      
+      for (i in 1:2) {
+        atk_unit <- order[[i]]; def_unit <- if(i==1) order[[2]] else order[[1]]
+        if (atk_unit$hp <= 0) next
+        if (runif(1, 0, 100) < def_unit$spd) {
+          action_msg <- "しかし かわされた！"
+        } else {
+          base_dmg <- (atk_unit$atk - (def_unit$def / 2)) / 2
+          damage <- round(base_dmg + runif(1, -abs(base_dmg)/16, abs(base_dmg)/16))
+          if (damage <= 0 && atk_unit$atk > 0) {
+            damage <- if (runif(1) < 0.5) 1 else 0
+          }
+          def_unit$hp <- max(0, def_unit$hp - damage)
+          action_msg <- paste0(damage, " のダメージを与えた！")
         }
-        
-        def_unit$hp <- max(0, def_unit$hp - damage)
-        action_msg <- paste0(damage, " のダメージを与えた！")
+        if (def_unit$id == "c1") c1$hp <- def_unit$hp else c2$hp <- def_unit$hp
+        msg <- paste0(msg, atk_unit$name, " の攻撃！ ", action_msg, " (", c1$name, ":", c1$hp, ", ", c2$name, ":", c2$hp, ")\n")
+        if (c1$hp <= 0 || c2$hp <= 0) break
       }
-      if (def_unit$id == "c1") c1$hp <- def_unit$hp else c2$hp <- def_unit$hp
-      msg <- paste0(msg, atk_unit$name, " の攻撃！ ", action_msg, " (", c1$name, ":", c1$hp, ", ", c2$name, ":", c2$hp, ")\n")
-      if (c1$hp <= 0 || c2$hp <= 0) break
+      battle_state$c1 <- c1; battle_state$c2 <- c2
+      battle_state$log <- paste0(battle_state$log, msg, "\n"); battle_state$turn <- battle_state$turn + 1
     }
-    battle_state$c1 <- c1; battle_state$c2 <- c2
-    battle_state$log <- paste0(battle_state$log, msg, "\n"); battle_state$turn <- battle_state$turn + 1
     
+    # --- 死亡判定・終了処理（HPが0で始まった場合もここを通過して終了する） ---
     if (c1$hp <= 0 || c2$hp <= 0) {
       battle_state$finished <- TRUE
       winner <- if(c1$hp > 0) c1$name else c2$name
