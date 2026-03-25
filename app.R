@@ -31,13 +31,11 @@ ui <- fluidPage(
   
   # --- ヘッダー ---
   div(class = "description-text",
-      "任意のHP（ヒットポイント），攻撃力，守備力，素早さのキャラクターを生成してバトルさせるゲームです．", br(),
-      "それぞれのステータスの最小値は0，最大値は100です．", br(),
-      "制約として，4つのステータスの合計値は100以下でなければなりません．", br(),
+      "任意のヒットポイント（HP），攻撃力（ATK），守備力（DEF），素早さ（SPD）のキャラクターを生成してバトルさせるゲームです．", br(),
+      "それぞれのステータスの最小値は0，最大値は100ですが，4つのステータスの合計値は100以下でなければなりません．", br(),
       "モード1では，あなたのキャラクターが5人の強豪と戦って，5連勝したらクリアです．", br(),
       "モード2では，任意のステータスをもつ2つのキャラクターを自由に対戦させることができます．", br(),
-      "すべて入力し終えたら，「チャレンジ開始!」ボタンを押してください．", br(),
-      "「次のターンへ」ボタンを押すと，戦闘の様子が1ターンずつ表示されます．", br(),
+      "すべて入力し終えたら，「チャレンジ開始!」ボタンを押してください．「次のターンへ」ボタンを押すと，戦闘の様子が1ターンずつ表示されます．", br(),
       br(),
       "参考資料：JBSクエストの記録", br(),
       tags$a(href="https://jbsmemorial.sakura.ne.jp/etc/quest1.html", "https://jbsmemorial.sakura.ne.jp/etc/quest1.html"), br(),
@@ -45,7 +43,7 @@ ui <- fluidPage(
       br(),
       "注意事項：", br(),
       "本ゲームは，JBSクエストの設定を参考にして，製作者がR言語を用いて作成したものです．", br(),
-      "JBSクエストのアルゴリズムは非公開ですので，本ゲームはJBSクエストを完全に再現したものではありません．", br(),
+      "オリジナルのJBSクエストのアルゴリズムはマル秘（非公開）でしたので，本ゲームはJBSクエストを完全に再現したものではありません．", br(),
       br(),
       "製作者：", tags$a(href="https://researchmap.jp/mtakaha", "高橋 将宜")
   ),
@@ -57,7 +55,7 @@ ui <- fluidPage(
              sidebarLayout(
                sidebarPanel(width = 4,
                             textInput("m1_name", "あなたのキャラクターの名前", value = ""),
-                            numericInput("m1_hp", "HP", value = NA, min = 0),
+                            numericInput("m1_hp", "ヒットポイント", value = NA, min = 0),
                             numericInput("m1_atk", "攻撃力", value = NA, min = 0),
                             numericInput("m1_def", "守備力", value = NA, min = 0),
                             numericInput("m1_spd", "素早さ", value = NA, min = 0),
@@ -73,8 +71,8 @@ ui <- fluidPage(
              sidebarLayout(
                sidebarPanel(width = 4,
                             fluidRow(
-                              column(6, h4("キャラ1"), textInput("m2_n1", "名前", ""), numericInput("m2_h1", "HP", NA), numericInput("m2_a1", "攻撃力", NA), numericInput("m2_d1", "守備力", NA), numericInput("m2_s1", "素早さ", NA)),
-                              column(6, h4("キャラ2"), textInput("m2_n2", "名前", ""), numericInput("m2_h2", "HP", NA), numericInput("m2_a2", "攻撃力", NA), numericInput("m2_d2", "守備力", NA), numericInput("m2_s2", "素早さ", NA))
+                              column(6, h4("キャラ1"), textInput("m2_n1", "名前", ""), numericInput("m2_h1", "ヒットポイント", NA), numericInput("m2_a1", "攻撃力", NA), numericInput("m2_d1", "守備力", NA), numericInput("m2_s1", "素早さ", NA)),
+                              column(6, h4("キャラ2"), textInput("m2_n2", "名前", ""), numericInput("m2_h2", "ヒットポイント", NA), numericInput("m2_a2", "攻撃力", NA), numericInput("m2_d2", "守備力", NA), numericInput("m2_s2", "素早さ", NA))
                             ),
                             uiOutput("warning_m2"),
                             hr(),
