@@ -104,7 +104,7 @@ server <- function(input, output, session) {
   execute_turn <- function() {
     c1 <- battle_state$c1; c2 <- battle_state$c2
     
-    # --- ターン開始時に生存チェックを行い，HPがなければ攻撃処理をスキップ ---
+    # --- ターン開始時にHPが0ならば攻撃処理をスキップ ---
     if (c1$hp > 0 && c2$hp > 0) {
       msg <- paste0("[ターン ", battle_state$turn, "]\n")
       order <- if ((c1$spd * runif(1)) >= (c2$spd * runif(1))) list(c1, c2) else list(c2, c1)
@@ -132,7 +132,7 @@ server <- function(input, output, session) {
       battle_state$log <- paste0(battle_state$log, msg, "\n"); battle_state$turn <- battle_state$turn + 1
     }
     
-    # --- 死亡判定・終了処理（HPが0で始まった場合もここを通過して終了する） ---
+    # --- 終了処理（HPが0で始まった場合もここを通過して終了する） ---
     if (c1$hp <= 0 || c2$hp <= 0) {
       battle_state$finished <- TRUE
       winner <- if(c1$hp > 0) c1$name else c2$name
