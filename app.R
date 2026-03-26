@@ -55,11 +55,11 @@ ui <- fluidPage(
       "モード2では，任意のステータスをもつ2つのキャラクターを自由に対戦させることができます．", br(),
       "すべて入力し終えたら，「チャレンジ開始!」ボタンまたは「対戦開始!」ボタンを押してください．「次のターンへ」ボタンを押すと，戦闘の様子が1ターンずつ表示されます．", br(),
       br(),
-      "注意事項：", "JBSクエストのソースコードはマル秘なので，本ゲームはJBSクエストを完全再現したものではありません．本ゲームは，製作者がR言語で独自に作成したものです．また，本ゲームはファンによる非公式の二次創作物（トリビュート作品）であり，株式会社集英社および当時の関係者とは一切関係ありません．対戦相手のデータは，当時の誌面記録に基づき，歴史を振り返る目的で引用しています．", br(),
+      "注意事項：", "JBSクエストのソースコードはマル秘なので，本ゲームはJBSクエストを完全再現したものではありません．本ゲームは，製作者がR言語で独自に作成したものです．また，本ゲームはファンによる非公式の二次創作物（トリビュート作品）であり，株式会社集英社および当時の関係者とは一切関係ありません．対戦相手のデータは，当時の誌面記録に基づき，歴史を振り返る目的で引用しています（少年ジャンプ，1989年43号～45号，1990年33号～35号）．", br(),
       "製作者：", tags$a(href="https://researchmap.jp/mtakaha", "高橋 将宜", target="_blank", rel="noopener noreferrer"), br(),
       "参考資料：", 
-      tags$a(href="https://jbsmemorial.sakura.ne.jp/etc/quest1.html", "JBSクエストの記録1", target="_blank", rel="noopener noreferrer"), "，", 
-      tags$a(href="https://jbsmemorial.sakura.ne.jp/etc/quest2.html", "JBSクエストの記録2", target="_blank", rel="noopener noreferrer")
+      tags$a(href="https://jbsmemorial.sakura.ne.jp/etc/quest1.html", "JBSクエストの記録", target="_blank", rel="noopener noreferrer"), "，", 
+      tags$a(href="https://jbsmemorial.sakura.ne.jp/etc/quest2.html", "JBSクエスト2の記録", target="_blank", rel="noopener noreferrer")
   ),
   
   hr(),
