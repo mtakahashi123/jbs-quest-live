@@ -37,7 +37,7 @@ ui <- fluidPage(
       }
       
       /* シェアボタン */
-      .btn-share { background-color: #1DA1F2; color: white; border: none; margin-top: 10px; width: 100%; font-weight: bold; }
+      .btn-share { background-color: #1DA1F2; color: white; border: none; margin-top: 30px; width: 100%; font-weight: bold; }
       .btn-share:hover { background-color: #1991db; color: white; }
     ")),
     tags$script(HTML("
@@ -77,7 +77,7 @@ ui <- fluidPage(
                             hr(),
                             actionButton("start_m1", "チャレンジ開始！", class = "btn-primary", width = "100%"),
                             uiOutput("next_btn_ui_m1"),
-                            uiOutput("share_ui_m1") # シェアボタン表示場所
+                            uiOutput("share_ui_m1")
                ),
                mainPanel(width = 8, div(class = "battle-log", verbatimTextOutput("log_m1")))
              )
@@ -93,7 +93,7 @@ ui <- fluidPage(
                             hr(),
                             actionButton("start_m2", "対戦開始！", class = "btn-success", width = "100%"),
                             uiOutput("next_btn_ui_m2"),
-                            uiOutput("share_ui_m2") # シェアボタン表示場所
+                            uiOutput("share_ui_m2")
                ),
                mainPanel(width = 8, div(class = "battle-log", verbatimTextOutput("log_m2")))
              )
@@ -107,6 +107,7 @@ server <- function(input, output, session) {
   
   check_stats <- function(n, h, a, d, s) {
     if (n == "" || any(is.na(c(h, a, d, s)))) return("全項目入力が必要です")
+    if (any(c(h, a, d, s) < 0)) return("ステータスに負の値は入力できません")
     if (sum(c(h, a, d, s)) > 100) return(paste0("合計100を超えています (現在:", sum(c(h, a, d, s)), ")"))
     return(NULL)
   }
@@ -166,7 +167,7 @@ server <- function(input, output, session) {
     battle_state$c1 <- list(id="c1", name=input$m1_name, hp=input$m1_hp, atk=input$m1_atk, def=input$m1_def, spd=input$m1_spd)
     opp <- OPPONENTS[[1]]; opp$id <- "c2"
     battle_state$c2 <- opp
-    battle_state$log <- paste0("=== チャレンジ開始 vs ", opp$name, " ===\n", fmt_stats(battle_state$c1), "\n", fmt_stats(opp), "\n\n")
+    battle_state$log <- paste0("=== チャレンジ開始 vs ", opp$name, "（", opp$title, "） ===\n", fmt_stats(battle_state$c1), "\n", fmt_stats(opp), "\n\n")
   })
   
   observeEvent(input$start_m2, {
@@ -186,7 +187,9 @@ server <- function(input, output, session) {
       opp <- OPPONENTS[[battle_state$opponent_idx]]; opp$id <- "c2"
       battle_state$c2 <- opp
       battle_state$turn <- 1; battle_state$finished <- FALSE
-      battle_state$log <- paste0(battle_state$log, "=== 第", battle_state$opponent_idx, "戦 vs ", opp$name, " ===\n\n")
+      battle_state$log <- paste0(battle_state$log, "=== 第", battle_state$opponent_idx, "戦 vs ", opp$name, "（", opp$title, "） ===\n",
+                                 fmt_stats(battle_state$c1), "\n",
+                                 fmt_stats(opp), "\n\n")
     }
   })
   
@@ -206,16 +209,20 @@ server <- function(input, output, session) {
   create_share_button <- function() {
     if (!battle_state$finished) return(NULL)
     
+    if (battle_state$mode == 1) {
+      is_final_win <- (battle_state$opponent_idx == 5 && battle_state$c1$hp > 0)
+      is_loss <- (battle_state$c1$hp <= 0)
+      if (!(is_final_win || is_loss)) return(NULL)
+    }
+    
     winner_name <- if(battle_state$c1$hp > 0) battle_state$c1$name else battle_state$c2$name
     
-    # モード1で全クリアした時とそれ以外でメッセージを変える
     msg <- if(battle_state$mode == 1 && battle_state$opponent_idx == 5 && battle_state$c1$hp > 0) {
       paste0("JBSクエスト・トリビュートで5連勝達成！王者は「", winner_name, "」だ！")
     } else {
       paste0("JBSクエスト・トリビュートで「", winner_name, "」が勝利しました！")
     }
     
-    # シェア用URLの作成
     app_url <- "https://mtakahashi123.github.io/jbs-quest-live/" 
     tweet_url <- paste0("https://twitter.com/intent/tweet?text=", 
                         utils::URLencode(msg), 
