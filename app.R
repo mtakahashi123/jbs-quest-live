@@ -12,7 +12,7 @@ OPPONENTS <- list(
 # --- UI ---
 ui <- fluidPage(
   tags$head(
-    # Google Analytics 測定
+    # Google Analytics
     tags$script(async = NA, src = "https://www.googletagmanager.com/gtag/js?id=G-JT56Q0HQGV"),
     tags$script(HTML("
       window.dataLayer = window.dataLayer || [];
@@ -69,10 +69,10 @@ ui <- fluidPage(
              sidebarLayout(
                sidebarPanel(width = 4,
                             textInput("m1_name", "あなたのキャラクターの名前", value = ""),
-                            numericInput("m1_hp", "ヒットポイント", value = NA, min = 0),
-                            numericInput("m1_atk", "攻撃力", value = NA, min = 0),
-                            numericInput("m1_def", "守備力", value = NA, min = 0),
-                            numericInput("m1_spd", "素早さ", value = NA, min = 0),
+                            numericInput("m1_hp", "ヒットポイント(HP)", value = NA, min = 0),
+                            numericInput("m1_atk", "攻撃力(ATK)", value = NA, min = 0),
+                            numericInput("m1_def", "守備力(DEF)", value = NA, min = 0),
+                            numericInput("m1_spd", "素早さ(SPD)", value = NA, min = 0),
                             uiOutput("warning_m1"),
                             hr(),
                             actionButton("start_m1", "チャレンジ開始！", class = "btn-primary", width = "100%"),
@@ -86,8 +86,8 @@ ui <- fluidPage(
              sidebarLayout(
                sidebarPanel(width = 4,
                             fluidRow(
-                              column(6, textInput("m2_n1", "キャラ1の名前", ""), numericInput("m2_h1", "ヒットポイント", NA), numericInput("m2_a1", "攻撃力", NA), numericInput("m2_d1", "守備力", NA), numericInput("m2_s1", "素早さ", NA)),
-                              column(6, textInput("m2_n2", "キャラ2の名前", ""), numericInput("m2_h2", "ヒットポイント", NA), numericInput("m2_a2", "攻撃力", NA), numericInput("m2_d2", "守備力", NA), numericInput("m2_s2", "素早さ", NA))
+                              column(6, textInput("m2_n1", "キャラ1の名前", ""), numericInput("m2_h1", "ヒットポイント(HP)", NA), numericInput("m2_a1", "攻撃力(ATK)", NA), numericInput("m2_d1", "守備力(DEF)", NA), numericInput("m2_s1", "素早さ(SPD)", NA)),
+                              column(6, textInput("m2_n2", "キャラ2の名前", ""), numericInput("m2_h2", "ヒットポイント(HP)", NA), numericInput("m2_a2", "攻撃力(ATK)", NA), numericInput("m2_d2", "守備力(DEF)", NA), numericInput("m2_s2", "素早さ(SPD)", NA))
                             ),
                             uiOutput("warning_m2"),
                             hr(),
@@ -108,6 +108,7 @@ server <- function(input, output, session) {
   check_stats <- function(n, h, a, d, s) {
     if (n == "" || any(is.na(c(h, a, d, s)))) return("全項目入力が必要です")
     if (any(c(h, a, d, s) < 0)) return("ステータスに負の値は入力できません")
+    if (any(c(h, a, d, s) %% 1 != 0)) return("ステータスは整数で入力してください")
     if (sum(c(h, a, d, s)) > 100) return(paste0("合計100を超えています (現在:", sum(c(h, a, d, s)), ")"))
     return(NULL)
   }
