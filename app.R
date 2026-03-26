@@ -7,7 +7,7 @@ OPPONENTS <- list(
   list(name = "しらはまのすな", title = "第2回大会準優勝", hp=28, atk=48, def=12, spd=12),
   list(name = "いかりのひでよし", title = "第1回大会優勝", hp=26, atk=36, def=36, spd=2),
   list(name = "うっ☆マンボ", title = "第2回大会優勝", hp=26, atk=38, def=32, spd=4),
-  list(name = "魔王", title = "ラスボス", hp=50, atk=50, def=0, spd=0)
+  list(name = "ラスボス", title = "トリビュートのオリキャラ", hp=50, atk=50, def=0, spd=0)
 )
 
 # --- UI ---
