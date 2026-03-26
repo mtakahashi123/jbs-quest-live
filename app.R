@@ -28,6 +28,7 @@ ui <- fluidPage(
       .status-warning { color: red; font-weight: bold; margin-bottom: 10px; font-size: 0.85em; }
       .battle-log { background-color: #f8f9fa; border: 1px solid #ddd; padding: 15px; height: 500px; overflow-y: auto; font-family: 'Courier New', monospace; white-space: pre-wrap; }
       .description-text { line-height: 1.2; margin-bottom: 20px; font-size: 1em; }
+      .footer-text { line-height: 1.4; margin-top: 40px; margin-bottom: 40px; font-size: 0.9em; color: #555; }
       
       /* スマホ対応 */
       @media (max-width: 768px) {
@@ -37,7 +38,7 @@ ui <- fluidPage(
       }
       
       /* シェアボタン */
-      .btn-share { background-color: #1DA1F2; color: white; border: none; margin-top: 30px; width: 100%; font-weight: bold; }
+      .btn-share { background-color: #1DA1F2; color: white; border: none; margin-top: 100px; width: 100%; font-weight: bold; }
       .btn-share:hover { background-color: #1991db; color: white; }
     ")),
     tags$script(HTML("
@@ -58,15 +59,7 @@ ui <- fluidPage(
       br(),
       "すべて入力し終えたら，「チャレンジ開始!」ボタンまたは「対戦開始!」ボタンを押してください．", br(),
       "「次のターンへ」ボタンを押すと，戦闘の様子が1ターンずつ表示されます．", br(),
-      "パソコンでは画面の右に，スマホでは画面の下に戦闘ログが表示されます．", br(),
-      br(),
-      "注意事項：", "JBSクエストのソースコードはマル秘なので，本ゲームはJBSクエストを完全再現したものではありません．本ゲームは，製作者がR言語で独自に作成したものです．また，本ゲームはファンによる非公式の二次創作物（トリビュート作品）であり，株式会社集英社および当時の関係者とは一切関係ありません．対戦相手のデータは，当時の誌面記録に基づき，歴史を振り返る目的で引用しています（「ジャンプ放送局」，『週間少年ジャンプ』，1989年43号～45号，1990年33号～35号）．", br(),
-      br(),
-      "製作者：", tags$a(href="https://researchmap.jp/mtakaha", "高橋 将宜", target="_blank", rel="noopener noreferrer"), br(),
-      br(),
-      "参考資料：", 
-      tags$a(href="https://jbsmemorial.sakura.ne.jp/etc/quest1.html", "JBSクエストの記録", target="_blank", rel="noopener noreferrer"), "，", 
-      tags$a(href="https://jbsmemorial.sakura.ne.jp/etc/quest2.html", "JBSクエスト2の記録", target="_blank", rel="noopener noreferrer")
+      "パソコンでは画面の右に，スマホでは画面の下に戦闘ログが表示されます．"
   ),
   
   hr(),
@@ -86,7 +79,9 @@ ui <- fluidPage(
                             uiOutput("next_btn_ui_m1"),
                             uiOutput("share_ui_m1")
                ),
-               mainPanel(width = 8, div(class = "battle-log", verbatimTextOutput("log_m1")))
+               mainPanel(width = 8, 
+                         strong("戦闘ログ"),
+                         div(class = "battle-log", verbatimTextOutput("log_m1")))
              )
     ),
     tabPanel("モード2: 自由対戦",
@@ -102,9 +97,23 @@ ui <- fluidPage(
                             uiOutput("next_btn_ui_m2"),
                             uiOutput("share_ui_m2")
                ),
-               mainPanel(width = 8, div(class = "battle-log", verbatimTextOutput("log_m2")))
+               mainPanel(width = 8, 
+                         strong("戦闘ログ"),
+                         div(class = "battle-log", verbatimTextOutput("log_m2")))
              )
     )
+  ),
+  
+  # --- フッター ---
+  hr(),
+  div(class = "footer-text",
+      "注意事項： JBSクエストのソースコードはマル秘なので，本ゲームはJBSクエストを完全再現したものではありません．本ゲームは，製作者がR言語で独自に作成したものです．また，本ゲームはファンによる非公式の二次創作物（トリビュート作品）であり，株式会社集英社および当時の関係者とは一切関係ありません．対戦相手のデータは，当時の誌面記録に基づき，歴史を振り返る目的で引用しています（「ジャンプ放送局」，『週間少年ジャンプ』，1989年43号～45号，1990年33号～35号）．", br(),
+      br(),
+      "製作者：", tags$a(href="https://researchmap.jp/mtakaha", "高橋 将宜", target="_blank", rel="noopener noreferrer"), br(),
+      br(),
+      "参考資料：", 
+      tags$a(href="https://jbsmemorial.sakura.ne.jp/etc/quest1.html", "JBSクエストの記録", target="_blank", rel="noopener noreferrer"), " ， ", 
+      tags$a(href="https://jbsmemorial.sakura.ne.jp/etc/quest2.html", "JBSクエスト2の記録", target="_blank", rel="noopener noreferrer")
   )
 )
 
@@ -231,7 +240,8 @@ server <- function(input, output, session) {
       paste0("JBSクエスト・トリビュートで「", winner_name, "」が勝利しました！")
     }
     
-    app_url <- "https://mtakahashi123.github.io/jbs-quest-live/" 
+    # LINE内ブラウザ対策として openExternalBrowser=1 を付与
+    app_url <- "https://mtakahashi123.github.io/jbs-quest-live/?openExternalBrowser=1" 
     tweet_url <- paste0("https://twitter.com/intent/tweet?text=", 
                         utils::URLencode(msg), 
                         "&url=", utils::URLencode(app_url),
