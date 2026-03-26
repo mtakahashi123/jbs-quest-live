@@ -12,6 +12,15 @@ OPPONENTS <- list(
 # --- UI ---
 ui <- fluidPage(
   tags$head(
+    # Google Analytics 測定
+    tags$script(async = NA, src = "https://www.googletagmanager.com/gtag/js?id=G-JT56Q0HQGV"),
+    tags$script(HTML("
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-JT56Q0HQGV');
+    ")),
+    
     tags$style(HTML("
       input[type=number]::-webkit-inner-spin-button, 
       input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
@@ -19,6 +28,17 @@ ui <- fluidPage(
       .status-warning { color: red; font-weight: bold; margin-bottom: 10px; font-size: 0.85em; }
       .battle-log { background-color: #f8f9fa; border: 1px solid #ddd; padding: 15px; height: 500px; overflow-y: auto; font-family: 'Courier New', monospace; white-space: pre-wrap; }
       .description-text { line-height: 1.2; margin-bottom: 20px; font-size: 1em; }
+      
+      /* スマホ対応 */
+      @media (max-width: 768px) {
+        .battle-log { height: 400px; font-size: 0.9em; }
+        h1 { font-size: 1.5em; }
+        .btn { padding: 10px; font-size: 1.1em; }
+      }
+      
+      /* シェアボタン */
+      .btn-share { background-color: #1DA1F2; color: white; border: none; margin-top: 10px; width: 100%; font-weight: bold; }
+      .btn-share:hover { background-color: #1991db; color: white; }
     ")),
     tags$script(HTML("
       $(document).on('shiny:connected', function() {
@@ -29,7 +49,6 @@ ui <- fluidPage(
   
   h1("JBSクエスト・トリビュート"),
   
-  # --- ヘッダー ---
   div(class = "description-text",
       "任意のヒットポイント（HP），攻撃力（ATK），守備力（DEF），素早さ（SPD）のキャラクターを生成してバトルさせるゲームです．", br(),
       "それぞれのステータスの最小値は0，最大値は100ですが，4つのステータスの合計値は100以下でなければなりません．", br(),
@@ -37,8 +56,10 @@ ui <- fluidPage(
       "モード2では，任意のステータスをもつ2つのキャラクターを自由に対戦させることができます．", br(),
       "すべて入力し終えたら，「チャレンジ開始!」ボタンまたは「対戦開始!」ボタンを押してください．「次のターンへ」ボタンを押すと，戦闘の様子が1ターンずつ表示されます．", br(),
       "注意事項：", "JBSクエストのソースコードはマル秘なので，本ゲームはJBSクエストを完全再現したものではありません．本ゲームは，製作者がR言語で独自に作成したものです．", br(),
-      "製作者：", tags$a(href="https://researchmap.jp/mtakaha", "高橋 将宜"), br(),
-      "参考資料：", tags$a(href="https://jbsmemorial.sakura.ne.jp/etc/quest1.html", "JBSクエストの記録1"), "，", tags$a(href="https://jbsmemorial.sakura.ne.jp/etc/quest2.html", "JBSクエストの記録2")
+      "製作者：", tags$a(href="https://researchmap.jp/mtakaha", "高橋 将宜", target="_blank", rel="noopener noreferrer"), br(),
+      "参考資料：", 
+      tags$a(href="https://jbsmemorial.sakura.ne.jp/etc/quest1.html", "JBSクエストの記録1", target="_blank", rel="noopener noreferrer"), "，", 
+      tags$a(href="https://jbsmemorial.sakura.ne.jp/etc/quest2.html", "JBSクエストの記録2", target="_blank", rel="noopener noreferrer")
   ),
   
   hr(),
@@ -55,7 +76,8 @@ ui <- fluidPage(
                             uiOutput("warning_m1"),
                             hr(),
                             actionButton("start_m1", "チャレンジ開始！", class = "btn-primary", width = "100%"),
-                            uiOutput("next_btn_ui_m1")
+                            uiOutput("next_btn_ui_m1"),
+                            uiOutput("share_ui_m1") # シェアボタン表示場所
                ),
                mainPanel(width = 8, div(class = "battle-log", verbatimTextOutput("log_m1")))
              )
@@ -70,7 +92,8 @@ ui <- fluidPage(
                             uiOutput("warning_m2"),
                             hr(),
                             actionButton("start_m2", "対戦開始！", class = "btn-success", width = "100%"),
-                            uiOutput("next_btn_ui_m2")
+                            uiOutput("next_btn_ui_m2"),
+                            uiOutput("share_ui_m2") # シェアボタン表示場所
                ),
                mainPanel(width = 8, div(class = "battle-log", verbatimTextOutput("log_m2")))
              )
@@ -78,14 +101,13 @@ ui <- fluidPage(
   )
 )
 
-# --- Server ---
+# --- サーバ ---
 server <- function(input, output, session) {
   battle_state <- reactiveValues(active = FALSE, mode = 0, c1 = NULL, c2 = NULL, turn = 1, opponent_idx = 1, log = "", finished = FALSE)
   
   check_stats <- function(n, h, a, d, s) {
     if (n == "" || any(is.na(c(h, a, d, s)))) return("全項目入力が必要です")
     if (sum(c(h, a, d, s)) > 100) return(paste0("合計100を超えています (現在:", sum(c(h, a, d, s)), ")"))
-    if (h < 0 || a < 0 || d < 0 || s < 0) return("ステータスに負の値は入力できません")
     return(NULL)
   }
   
@@ -103,12 +125,9 @@ server <- function(input, output, session) {
   
   execute_turn <- function() {
     c1 <- battle_state$c1; c2 <- battle_state$c2
-    
-    # --- ターン開始時にHPが0ならば攻撃処理をスキップ ---
     if (c1$hp > 0 && c2$hp > 0) {
       msg <- paste0("[ターン ", battle_state$turn, "]\n")
       order <- if ((c1$spd * runif(1)) >= (c2$spd * runif(1))) list(c1, c2) else list(c2, c1)
-      
       for (i in 1:2) {
         atk_unit <- order[[i]]; def_unit <- if(i==1) order[[2]] else order[[1]]
         if (atk_unit$hp <= 0) next
@@ -118,29 +137,25 @@ server <- function(input, output, session) {
         } else {
           base_dmg <- (atk_unit$atk - (def_unit$def / 2)) / 2
           damage <- round(base_dmg + runif(1, -abs(base_dmg)/16, abs(base_dmg)/16))
-          if (damage <= 0 && atk_unit$atk > 0) {
-            damage <- if (runif(1) < 0.5) 1 else 0
-          }
+          if (damage <= 0 && atk_unit$atk > 0) damage <- if (runif(1) < 0.5) 1 else 0
           def_unit$hp <- max(0, def_unit$hp - damage)
           action_msg <- paste0(damage, " のダメージを与えた！")
         }
         if (def_unit$id == "c1") c1$hp <- def_unit$hp else c2$hp <- def_unit$hp
-        msg <- paste0(msg, atk_unit$name, " の攻撃！ ", action_msg, " (", c1$name, ":", c1$hp, ", ", c2$name, ":", c2$hp, ")\n")
+        msg <- paste0(msg, atk_unit$name, " の攻撃！ ", action_msg, "\n")
         if (c1$hp <= 0 || c2$hp <= 0) break
       }
+      msg <- paste0(msg, " (", c1$name, "のHP:", c1$hp, ", ", c2$name, "のHP:", c2$hp, ")\n")
       battle_state$c1 <- c1; battle_state$c2 <- c2
       battle_state$log <- paste0(battle_state$log, msg, "\n"); battle_state$turn <- battle_state$turn + 1
     }
     
-    # --- 終了処理（HPが0で始まった場合もここを通過して終了する） ---
     if (c1$hp <= 0 || c2$hp <= 0) {
       battle_state$finished <- TRUE
       winner <- if(c1$hp > 0) c1$name else c2$name
       battle_state$log <- paste0(battle_state$log, ">>>> ", winner, " の勝利！\n")
       if (battle_state$mode == 1 && winner == c1$name && battle_state$opponent_idx == 5) {
         battle_state$log <- paste0(battle_state$log, "\n祝！！ 5連勝達成！ あなたが真の王者です！\n")
-      } else if (battle_state$mode == 1 && winner != c1$name) {
-        battle_state$log <- paste0(battle_state$log, "\n敗北しました... チャレンジ失敗です。\n")
       }
     }
   }
@@ -151,9 +166,7 @@ server <- function(input, output, session) {
     battle_state$c1 <- list(id="c1", name=input$m1_name, hp=input$m1_hp, atk=input$m1_atk, def=input$m1_def, spd=input$m1_spd)
     opp <- OPPONENTS[[1]]; opp$id <- "c2"
     battle_state$c2 <- opp
-    battle_state$log <- paste0("=== チャレンジ開始 vs ", opp$name, " ===\n",
-                               fmt_stats(battle_state$c1), "\n",
-                               fmt_stats(opp), " (", opp$title, ")\n\n")
+    battle_state$log <- paste0("=== チャレンジ開始 vs ", opp$name, " ===\n", fmt_stats(battle_state$c1), "\n", fmt_stats(opp), "\n\n")
   })
   
   observeEvent(input$start_m2, {
@@ -161,9 +174,7 @@ server <- function(input, output, session) {
     battle_state$active <- TRUE; battle_state$mode <- 2; battle_state$turn <- 1; battle_state$finished <- FALSE
     battle_state$c1 <- list(id="c1", name=input$m2_n1, hp=input$m2_h1, atk=input$m2_a1, def=input$m2_d1, spd=input$m2_s1)
     battle_state$c2 <- list(id="c2", name=input$m2_n2, hp=input$m2_h2, atk=input$m2_a2, def=input$m2_d2, spd=input$m2_s2)
-    battle_state$log <- paste0("--- 自由対戦開始 ---\n",
-                               fmt_stats(battle_state$c1), "\n",
-                               fmt_stats(battle_state$c2), "\n\n")
+    battle_state$log <- paste0("--- 自由対戦開始 ---\n", fmt_stats(battle_state$c1), "\n", fmt_stats(battle_state$c2), "\n\n")
   })
   
   observeEvent(input$next_turn, {
@@ -175,9 +186,7 @@ server <- function(input, output, session) {
       opp <- OPPONENTS[[battle_state$opponent_idx]]; opp$id <- "c2"
       battle_state$c2 <- opp
       battle_state$turn <- 1; battle_state$finished <- FALSE
-      battle_state$log <- paste0(battle_state$log, "=== 第", battle_state$opponent_idx, "戦 vs ", opp$name, " ===\n",
-                                 fmt_stats(battle_state$c1), "\n",
-                                 fmt_stats(opp), " (", opp$title, ")\n\n")
+      battle_state$log <- paste0(battle_state$log, "=== 第", battle_state$opponent_idx, "戦 vs ", opp$name, " ===\n\n")
     }
   })
   
@@ -192,6 +201,32 @@ server <- function(input, output, session) {
   }
   output$next_btn_ui_m1 <- renderUI({ btn_ui(1) })
   output$next_btn_ui_m2 <- renderUI({ btn_ui(2) })
+  
+  # --- SNSシェアボタンの生成 ---
+  create_share_button <- function() {
+    if (!battle_state$finished) return(NULL)
+    
+    winner_name <- if(battle_state$c1$hp > 0) battle_state$c1$name else battle_state$c2$name
+    
+    # モード1で全クリアした時とそれ以外でメッセージを変える
+    msg <- if(battle_state$mode == 1 && battle_state$opponent_idx == 5 && battle_state$c1$hp > 0) {
+      paste0("JBSクエスト・トリビュートで5連勝達成！王者は「", winner_name, "」だ！")
+    } else {
+      paste0("JBSクエスト・トリビュートで「", winner_name, "」が勝利しました！")
+    }
+    
+    # シェア用URLの作成
+    app_url <- "https://mtakahashi123.github.io/jbs-quest-live/" 
+    tweet_url <- paste0("https://twitter.com/intent/tweet?text=", 
+                        utils::URLencode(msg), 
+                        "&url=", utils::URLencode(app_url),
+                        "&hashtags=JBSクエスト,RShiny")
+    
+    tags$a(href = tweet_url, class = "btn btn-share", target = "_blank", "結果をXでシェア")
+  }
+  
+  output$share_ui_m1 <- renderUI({ create_share_button() })
+  output$share_ui_m2 <- renderUI({ create_share_button() })
 }
 
 shinyApp(ui = ui, server = server)
