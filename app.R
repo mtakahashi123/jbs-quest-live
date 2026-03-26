@@ -1,13 +1,13 @@
 library(shiny)
 
-# --- 定数（対戦相手データ） ---
+# --- 対戦相手データ ---
 OPPONENTS <- list(
-  list(name = "のみ003", title = "第1回大会福岡代表", hp=1, atk=1, def=0, spd=98),
-  list(name = "ラッシュやまのて", title = "第1回大会準優勝", hp=34, atk=33, def=33, spd=0),
-  list(name = "しらはまのすな", title = "第2回大会準優勝", hp=28, atk=48, def=12, spd=12),
-  list(name = "いかりのひでよし", title = "第1回大会優勝", hp=26, atk=36, def=36, spd=2),
-  list(name = "うっ☆マンボ", title = "第2回大会優勝", hp=26, atk=38, def=32, spd=4),
-  list(name = "ラスボス", title = "トリビュートのオリキャラ", hp=50, atk=50, def=0, spd=0)
+  list(name = "のみ003", title = "JBSクエスト 福岡代表", hp=1, atk=1, def=0, spd=98),
+  list(name = "ラッシュやまのて", title = "JBSクエスト 準優勝", hp=34, atk=33, def=33, spd=0),
+  list(name = "しらはまのすな", title = "JBSクエスト2 準優勝", hp=28, atk=48, def=12, spd=12),
+  list(name = "いかりのひでよし", title = "JBSクエスト 優勝", hp=26, atk=36, def=36, spd=2),
+  list(name = "うっ☆マンボ", title = "JBSクエスト2 優勝", hp=26, atk=38, def=32, spd=4),
+  list(name = "ラスボス", title = "JBSクエスト・トリビュート オリキャラ", hp=50, atk=50, def=0, spd=0)
 )
 
 # --- UI ---
