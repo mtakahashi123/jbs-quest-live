@@ -6,7 +6,8 @@ OPPONENTS <- list(
   list(name = "ラッシュやまのて", title = "第1回大会準優勝", hp=34, atk=33, def=33, spd=0),
   list(name = "しらはまのすな", title = "第2回大会準優勝", hp=28, atk=48, def=12, spd=12),
   list(name = "いかりのひでよし", title = "第1回大会優勝", hp=26, atk=36, def=36, spd=2),
-  list(name = "うっ☆マンボ", title = "第2回大会優勝", hp=26, atk=38, def=32, spd=4)
+  list(name = "うっ☆マンボ", title = "第2回大会優勝", hp=26, atk=38, def=32, spd=4),
+  list(name = "魔王", title = "ラスボス", hp=45, atk=35, def=0, spd=20)
 )
 
 # --- UI ---
@@ -54,7 +55,7 @@ ui <- fluidPage(
       "任意のヒットポイント（HP），攻撃力（ATK），守備力（DEF），素早さ（SPD）のキャラクターを生成してバトルさせるゲームです．", br(),
       "それぞれのステータスの最小値は0，最大値は100ですが，4つのステータスの合計値は100以下でなければなりません．", br(),
       br(),
-      "モード1では，あなたのキャラクターが5人の強豪と戦って，5連勝したらクリアです．", br(),
+      "モード1では，あなたのキャラクターが6人の強豪と戦って，6連勝したらクリアです．", br(),
       "モード2では，任意のステータスをもつ2つのキャラクターを自由に対戦させることができます．", br(),
       br(),
       "すべて入力し終えたら，「チャレンジ開始!」ボタンまたは「対戦開始!」ボタンを押してください．", br(),
@@ -65,7 +66,7 @@ ui <- fluidPage(
   hr(),
   
   tabsetPanel(
-    tabPanel("モード1: 5連勝チャレンジ",
+    tabPanel("モード1: 6連勝チャレンジ",
              sidebarLayout(
                sidebarPanel(width = 4,
                             textInput("m1_name", "あなたのキャラクターの名前", value = ""),
@@ -176,8 +177,8 @@ server <- function(input, output, session) {
       battle_state$finished <- TRUE
       winner <- if(c1$hp > 0) c1$name else c2$name
       battle_state$log <- paste0(battle_state$log, ">>>> ", winner, " の勝利！\n")
-      if (battle_state$mode == 1 && winner == c1$name && battle_state$opponent_idx == 5) {
-        battle_state$log <- paste0(battle_state$log, "\n祝！！ 5連勝達成！ あなたが真の王者です！\n")
+      if (battle_state$mode == 1 && winner == c1$name && battle_state$opponent_idx == 6) {
+        battle_state$log <- paste0(battle_state$log, "\n祝！！ 6連勝達成！ あなたが真の王者です！\n")
       }
     }
   }
@@ -202,7 +203,7 @@ server <- function(input, output, session) {
   observeEvent(input$next_turn, {
     if (!battle_state$finished) {
       execute_turn()
-    } else if (battle_state$mode == 1 && battle_state$c1$hp > 0 && battle_state$opponent_idx < 5) {
+    } else if (battle_state$mode == 1 && battle_state$c1$hp > 0 && battle_state$opponent_idx < 6) {
       battle_state$opponent_idx <- battle_state$opponent_idx + 1
       c1 <- battle_state$c1; c1$hp <- input$m1_hp; battle_state$c1 <- c1
       opp <- OPPONENTS[[battle_state$opponent_idx]]; opp$id <- "c2"
@@ -219,7 +220,7 @@ server <- function(input, output, session) {
   
   btn_ui <- function(mode) {
     if(!battle_state$active || battle_state$mode != mode) return(NULL)
-    if(battle_state$finished && (mode == 2 || (mode == 1 && (battle_state$c1$hp <= 0 || battle_state$opponent_idx == 5)))) return(NULL)
+    if(battle_state$finished && (mode == 2 || (mode == 1 && (battle_state$c1$hp <= 0 || battle_state$opponent_idx == 6)))) return(NULL)
     label <- if(battle_state$finished) "次の試合へ進む" else "次のターンへ"
     actionButton("next_turn", label, class = "btn-warning", style="margin-top:10px; width:100%;")
   }
@@ -231,15 +232,15 @@ server <- function(input, output, session) {
     if (!battle_state$finished) return(NULL)
     
     if (battle_state$mode == 1) {
-      is_final_win <- (battle_state$opponent_idx == 5 && battle_state$c1$hp > 0)
+      is_final_win <- (battle_state$opponent_idx == 6 && battle_state$c1$hp > 0)
       is_loss <- (battle_state$c1$hp <= 0)
       if (!(is_final_win || is_loss)) return(NULL)
     }
     
     winner_name <- if(battle_state$c1$hp > 0) battle_state$c1$name else battle_state$c2$name
     
-    msg <- if(battle_state$mode == 1 && battle_state$opponent_idx == 5 && battle_state$c1$hp > 0) {
-      paste0("JBSクエスト・トリビュートで5連勝達成！王者は「", winner_name, "」だ！")
+    msg <- if(battle_state$mode == 1 && battle_state$opponent_idx == 6 && battle_state$c1$hp > 0) {
+      paste0("JBSクエスト・トリビュートで6連勝達成！王者は「", winner_name, "」だ！")
     } else {
       paste0("JBSクエスト・トリビュートで「", winner_name, "」が勝利しました！")
     }
