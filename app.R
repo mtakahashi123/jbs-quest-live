@@ -52,7 +52,7 @@ ui <- fluidPage(
   h1("JBSクエスト・トリビュート"),
   
   div(class = "description-text",
-      "任意のヒットポイント（HP），攻撃力（ATK），守備力（DEF），素早さ（SPD）のキャラクターを生成してバトルさせる無料のオンラインゲームです．", br(),
+      "任意のヒットポイント，攻撃力，守備力，素早さのキャラクターを生成してバトルさせる無料のオンラインゲームです．", br(),
       "それぞれのステータスの最小値は0，最大値は100ですが，4つのステータスの合計値は100以下でなければなりません．", br(),
       br(),
       "モード1では，あなたのキャラクターが6人の強豪と戦って，6連勝したらクリアです．", br(),
@@ -60,7 +60,11 @@ ui <- fluidPage(
       br(),
       "すべて入力し終えたら，「チャレンジ開始!」ボタンまたは「対戦開始!」ボタンを押してください．", br(),
       "「次のターンへ」ボタンを押すと，戦闘の様子が1ターンずつ表示されます．", br(),
-      "パソコンでは画面の右に，スマホでは画面の下に戦闘ログが表示されます．"
+      "パソコンでは画面の右に，スマホでは画面の下に戦闘ログが表示されます．", br(),
+      br(),
+      tags$a(href="https://jbsmemorial.sakura.ne.jp/etc/quest1.html", "JBSクエストの記録", target="_blank", rel="noopener noreferrer"),"と",
+      tags$a(href="https://jbsmemorial.sakura.ne.jp/etc/quest2.html", "JBSクエスト2の記録", target="_blank", rel="noopener noreferrer"),"も参考にしてください．"
+  
   ),
   
   hr(),
@@ -114,11 +118,7 @@ ui <- fluidPage(
       "権利関係について：株式会社集英社および当時の制作関係者様とは一切関係ありません．", br(),
       "データの引用について：モード1で登場するキャラクター名およびパラメータ等のデータは，歴史的な記録を振り返る目的で，当時の誌面（『週刊少年ジャンプ』1989年43号～45号，1990年33号～35号）より引用しています．", br(),
       br(),
-      "制作者：", tags$a(href="https://researchmap.jp/mtakaha", "高橋 将宜", target="_blank", rel="noopener noreferrer"), br(),
-      br(),
-      "参考資料：", 
-      tags$a(href="https://jbsmemorial.sakura.ne.jp/etc/quest1.html", "JBSクエストの記録", target="_blank", rel="noopener noreferrer"), " ， ", 
-      tags$a(href="https://jbsmemorial.sakura.ne.jp/etc/quest2.html", "JBSクエスト2の記録", target="_blank", rel="noopener noreferrer")
+      "制作者：", tags$a(href="https://researchmap.jp/mtakaha", "高橋 将宜", target="_blank", rel="noopener noreferrer")
   )
 )
 
