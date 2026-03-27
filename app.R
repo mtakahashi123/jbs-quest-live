@@ -7,7 +7,7 @@ OPPONENTS <- list(
   list(name = "しらはまのすな", title = "JBSクエスト2 準優勝", hp=28, atk=48, def=12, spd=12),
   list(name = "いかりのひでよし", title = "JBSクエスト 優勝", hp=26, atk=36, def=36, spd=2),
   list(name = "うっ☆マンボ", title = "JBSクエスト2 優勝", hp=26, atk=38, def=32, spd=4),
-  list(name = "ラスボス", title = "JBSクエスト・トリビュート オリキャラ", hp=50, atk=50, def=0, spd=0)
+  list(name = "ラスボス", title = "トリビュート オリキャラ", hp=50, atk=50, def=0, spd=0)
 )
 
 # --- UI ---
@@ -62,9 +62,9 @@ ui <- fluidPage(
       "「次のターンへ」ボタンを押すと，戦闘の様子が1ターンずつ表示されます．", br(),
       "パソコンでは画面の右に，スマホでは画面の下に戦闘ログが表示されます．", br(),
       br(),
-      tags$a(href="https://jbsmemorial.sakura.ne.jp/etc/quest1.html", "JBSクエストの記録", target="_blank", rel="noopener noreferrer"),"と",
+      "ステータスの設定については，",tags$a(href="https://jbsmemorial.sakura.ne.jp/etc/quest1.html", "JBSクエストの記録", target="_blank", rel="noopener noreferrer"),"と",
       tags$a(href="https://jbsmemorial.sakura.ne.jp/etc/quest2.html", "JBSクエスト2の記録", target="_blank", rel="noopener noreferrer"),"も参考にしてください．"
-  
+      
   ),
   
   hr(),
