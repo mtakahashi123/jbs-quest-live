@@ -157,7 +157,7 @@ server <- function(input, output, session) {
         if (runif(1, 0, 100) < evasion_rate) {
           action_msg <- "しかし かわされた！"
         } else {
-          base_dmg <- (atk_unit$atk - (def_unit$def / 2)) / 2
+          base_dmg <- atk_unit$atk - def_unit$def
           damage <- round(base_dmg + runif(1, -abs(base_dmg)/16, abs(base_dmg)/16))
           if (damage <= 0 && atk_unit$atk > 0) damage <- if (runif(1) < 0.5) 1 else 0
           def_unit$hp <- max(0, def_unit$hp - damage)
