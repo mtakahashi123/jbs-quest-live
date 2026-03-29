@@ -171,7 +171,7 @@ server <- function(input, output, session) {
             
             damage <- round(base_dmg + rnd_val)          
             if (damage < 1 && atk_unit$atk > 0) damage <- if (runif(1) < 0.5) 1 else 0
-            if (damage < 1 && atk_unit$atk == 0) damage <- 0
+            if (atk_unit$atk == 0) damage <- 0
             
             def_unit$hp <- max(0, def_unit$hp - damage)
             action_msg <- paste0(damage, " のダメージを与えた！")
