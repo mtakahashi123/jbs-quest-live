@@ -157,20 +157,13 @@ server <- function(input, output, session) {
           if (runif(1, 0, 100) < evasion_rate) {
             action_msg <- "しかし かわされた！"
           } else {
-            base_dmg <- atk_unit$atk - def_unit$def
+            base_dmg <- (atk_unit$atk - def_unit$def) / 3
             
             # --- 変動値の計算と調整 ---
-            rnd_val <- runif(1, -abs(base_dmg)/16, abs(base_dmg)/16)
-            if (rnd_val > -1 && rnd_val < 0) {
-              rnd_val <- -1
-            } else if (rnd_val == 0) {
-              rnd_val <- if(runif(1) < 0.5) -1 else 1
-            } else if (rnd_val >= 0 && rnd_val < 1) {
-              rnd_val <- 1
-            }
+            rnd_val <- sample(c(-2, -1, 0, 1, 2), 1)
             
             damage <- round(base_dmg + rnd_val)          
-            if (damage < 1 && atk_unit$atk > 0) damage <- if (runif(1) < 0.5) 1 else 0
+            if (damage < 1 && atk_unit$atk > 0) damage <- sample(c(0, 1, 2), 1)
             if (atk_unit$atk == 0) damage <- 0
             
             def_unit$hp <- max(0, def_unit$hp - damage)
