@@ -1,13 +1,24 @@
 library(shiny)
 
 # --- 対戦相手データ ---
+r1 <- round(runif(1, 0.5, 4.4999), 0)
+if(r1 == 1){
+  OPPONENT2 <- list(name = "らっかせーキング", title = "JBSクエスト ベスト4", hp=42, atk=40, def=3, spd=15)
+}else if(r1 == 2){
+  OPPONENT2 <- list(name = "てつびん２８ごう", title = "JBSクエスト ベスト4", hp=42, atk=15, def=35, spd=8)
+}else if(r1 == 3){
+  OPPONENT2 <- list(name = "スーちゃんくじら", title = "JBSクエスト2 ベスト4", hp=30, atk=35, def=30, spd=5)
+}else if(r1 == 4){
+  OPPONENT2 <- list(name = "こっかいぎじろう", title = "JBSクエスト2 ベスト4", hp=25, atk=45, def=5, spd=25)
+}
+
 OPPONENTS <- list(
   list(name = "のみ003", title = "JBSクエスト 福岡代表", hp=1, atk=1, def=0, spd=98),
+  OPPONENT2,
   list(name = "ラッシュやまのて", title = "JBSクエスト 準優勝", hp=34, atk=33, def=33, spd=0),
   list(name = "しらはまのすな", title = "JBSクエスト2 準優勝", hp=28, atk=48, def=12, spd=12),
   list(name = "いかりのひでよし", title = "JBSクエスト 優勝", hp=26, atk=36, def=36, spd=2),
-  list(name = "うっ☆マンボ", title = "JBSクエスト2 優勝", hp=26, atk=38, def=32, spd=4),
-  list(name = "ラスボス", title = "トリビュート オリキャラ", hp=50, atk=50, def=0, spd=0)
+  list(name = "うっ☆マンボ", title = "JBSクエスト2 優勝", hp=26, atk=38, def=32, spd=4)
 )
 
 # --- UI ---
@@ -115,7 +126,7 @@ ui <- fluidPage(
       "制作者：", tags$a(href="https://researchmap.jp/mtakaha", "高橋 将宜", target="_blank", rel="noopener noreferrer"), br(),
       br(),
       "注意事項：本ゲームは，1980年代後半に『週刊少年ジャンプ』の読者投稿コーナー「ジャンプ放送局」にて行われた「JBSクエスト」へのリスペクトを込めて制作された，ファンによる非公式の二次創作（トリビュート作品）です．", br(),
-      "独自性について：当時のソースコードは非公開のため，本ゲームはJBSクエストを完全再現したものではなく，制作者がR言語を用いて独自に構築したアルゴリズムに基づいています．", br(),
+      "独自性について：当時のソースコードは非公開のため，本ゲームはJBSクエストを完全再現したものではなく，製作者がR言語を用いて独自に構築したアルゴリズムに基づいています．", br(),
       "権利関係について：株式会社集英社および当時の制作関係者様とは一切関係ありません．", br(),
       "データの引用について：モード1のキャラクター名およびパラメータ等のデータは，歴史的な記録を振り返る目的で，当時の誌面（『週刊少年ジャンプ』1989年43号～45号，1990年33号～35号）で公開された情報より引用しています．"
   )
@@ -153,18 +164,33 @@ server <- function(input, output, session) {
       for (i in 1:2) {
         atk_unit <- order[[i]]; def_unit <- if(i==1) order[[2]] else order[[1]]
         if (atk_unit$hp <= 0) next
-        evasion_rate <- max(0, def_unit$spd - atk_unit$spd)
-        if (runif(1, 0, 100) < evasion_rate) {
-          action_msg <- "しかし かわされた！"
-        } else {
-          base_dmg <- atk_unit$atk - def_unit$def
-          damage <- round(base_dmg + runif(1, -abs(base_dmg)/16, abs(base_dmg)/16))
-          if (damage <= 0 && atk_unit$atk > 0) damage <- if (runif(1) < 0.5) 1 else 0
-          def_unit$hp <- max(0, def_unit$hp - damage)
-          action_msg <- paste0(damage, " のダメージを与えた！")
+        
+        # --- 2回連続攻撃の判定 ---
+        prob_double <- max(0, (atk_unit$spd - def_unit$spd) / (def_unit$spd + 1) / 100)
+        num_attacks <- if(runif(1) < prob_double) 2 else 1
+        
+        if(num_attacks == 2) msg <- paste0(msg, atk_unit$name, " の2回連続攻撃！\n")
+        
+        for (hit_count in 1:num_attacks) {
+          if (def_unit$hp <= 0) break
+          
+          evasion_rate <- max(0, def_unit$spd - atk_unit$spd)
+          if (runif(1, 0, 100) < evasion_rate) {
+            action_msg <- "しかし かわされた！"
+          } else {
+            base_dmg <- atk_unit$atk - def_unit$def
+            damage <- round(base_dmg + runif(1, -abs(base_dmg)/16, abs(base_dmg)/16))
+            
+            # --- ダメージ最低1ポイント保証 ---
+            if (damage < 1) damage <- 1
+            
+            def_unit$hp <- max(0, def_unit$hp - damage)
+            action_msg <- paste0(damage, " のダメージを与えた！")
+          }
+          if (def_unit$id == "c1") c1$hp <- def_unit$hp else c2$hp <- def_unit$hp
+          msg <- paste0(msg, atk_unit$name, " の攻撃！ ", action_msg, "\n")
         }
-        if (def_unit$id == "c1") c1$hp <- def_unit$hp else c2$hp <- def_unit$hp
-        msg <- paste0(msg, atk_unit$name, " の攻撃！ ", action_msg, "\n")
+        
         if (c1$hp <= 0 || c2$hp <= 0) break
       }
       msg <- paste0(msg, " (", c1$name, "のHP:", c1$hp, ", ", c2$name, "のHP:", c2$hp, ")\n")
