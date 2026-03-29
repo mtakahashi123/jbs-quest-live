@@ -1,26 +1,5 @@
 library(shiny)
 
-# --- 対戦相手データ ---
-r1 <- round(runif(1, 0.5, 4.4999), 0)
-if(r1 == 1){
-  OPPONENT2 <- list(name = "らっかせーキング", title = "JBSクエスト ベスト4", hp=42, atk=40, def=3, spd=15)
-}else if(r1 == 2){
-  OPPONENT2 <- list(name = "てつびん２８ごう", title = "JBSクエスト ベスト4", hp=42, atk=15, def=35, spd=8)
-}else if(r1 == 3){
-  OPPONENT2 <- list(name = "スーちゃんくじら", title = "JBSクエスト2 ベスト4", hp=30, atk=35, def=30, spd=5)
-}else if(r1 == 4){
-  OPPONENT2 <- list(name = "こっかいぎじろう", title = "JBSクエスト2 ベスト4", hp=25, atk=45, def=5, spd=25)
-}
-
-OPPONENTS <- list(
-  list(name = "のみ003", title = "JBSクエスト 福岡代表", hp=1, atk=1, def=0, spd=98),
-  OPPONENT2,
-  list(name = "ラッシュやまのて", title = "JBSクエスト 準優勝", hp=34, atk=33, def=33, spd=0),
-  list(name = "しらはまのすな", title = "JBSクエスト2 準優勝", hp=28, atk=48, def=12, spd=12),
-  list(name = "いかりのひでよし", title = "JBSクエスト 優勝", hp=26, atk=36, def=36, spd=2),
-  list(name = "うっ☆マンボ", title = "JBSクエスト2 優勝", hp=26, atk=38, def=32, spd=4)
-)
-
 # --- UI ---
 ui <- fluidPage(
   tags$head(
@@ -134,7 +113,7 @@ ui <- fluidPage(
 
 # --- サーバ ---
 server <- function(input, output, session) {
-  battle_state <- reactiveValues(active = FALSE, mode = 0, c1 = NULL, c2 = NULL, turn = 1, opponent_idx = 1, log = "", finished = FALSE)
+  battle_state <- reactiveValues(active = FALSE, mode = 0, c1 = NULL, c2 = NULL, turn = 1, opponent_idx = 1, log = "", finished = FALSE, opps = NULL)
   
   check_stats <- function(n, h, a, d, s) {
     if (n == "" || any(is.na(c(h, a, d, s)))) return("全項目入力が必要です")
@@ -166,7 +145,7 @@ server <- function(input, output, session) {
         if (atk_unit$hp <= 0) next
         
         # --- 2回連続攻撃の判定 ---
-        prob_double <- max(0, (atk_unit$spd - def_unit$spd) / (def_unit$spd + 1) / 100)
+        prob_double <- max(0, (atk_unit$spd - def_unit$spd) / 100)
         num_attacks <- if(runif(1) < prob_double) 2 else 1
         
         if(num_attacks == 2) msg <- paste0(msg, atk_unit$name, " の2回連続攻撃！\n")
@@ -210,9 +189,31 @@ server <- function(input, output, session) {
   
   observeEvent(input$start_m1, {
     req(is.null(check_stats(input$m1_name, input$m1_hp, input$m1_atk, input$m1_def, input$m1_spd)))
+    
+    # --- 対戦相手のランダム選出 ---
+    r1 <- round(runif(1, 0.5, 4.4999), 0)
+    if(r1 == 1){
+      OPPONENT2 <- list(name = "らっかせーキング", title = "JBSクエスト ベスト4", hp=42, atk=40, def=3, spd=15)
+    }else if(r1 == 2){
+      OPPONENT2 <- list(name = "てつびん２８ごう", title = "JBSクエスト ベスト4", hp=42, atk=15, def=35, spd=8)
+    }else if(r1 == 3){
+      OPPONENT2 <- list(name = "スーちゃんくじら", title = "JBSクエスト2 ベスト4", hp=30, atk=35, def=30, spd=5)
+    }else if(r1 == 4){
+      OPPONENT2 <- list(name = "こっかいぎじろう", title = "JBSクエスト2 ベスト4", hp=25, atk=45, def=5, spd=25)
+    }
+    
+    battle_state$opps <- list(
+      list(name = "のみ003", title = "JBSクエスト 福岡代表", hp=1, atk=1, def=0, spd=98),
+      OPPONENT2,
+      list(name = "ラッシュやまのて", title = "JBSクエスト 準優勝", hp=34, atk=33, def=33, spd=0),
+      list(name = "しらはまのすな", title = "JBSクエスト2 準優勝", hp=28, atk=48, def=12, spd=12),
+      list(name = "いかりのひでよし", title = "JBSクエスト 優勝", hp=26, atk=36, def=36, spd=2),
+      list(name = "うっ☆マンボ", title = "JBSクエスト2 優勝", hp=26, atk=38, def=32, spd=4)
+    )
+    
     battle_state$active <- TRUE; battle_state$mode <- 1; battle_state$opponent_idx <- 1; battle_state$turn <- 1; battle_state$finished <- FALSE
     battle_state$c1 <- list(id="c1", name=input$m1_name, hp=input$m1_hp, atk=input$m1_atk, def=input$m1_def, spd=input$m1_spd)
-    opp <- OPPONENTS[[1]]; opp$id <- "c2"
+    opp <- battle_state$opps[[1]]; opp$id <- "c2"
     battle_state$c2 <- opp
     battle_state$log <- paste0("=== チャレンジ開始 vs ", opp$name, "（", opp$title, "） ===\n", fmt_stats(battle_state$c1), "\n", fmt_stats(opp), "\n\n")
   })
@@ -231,7 +232,7 @@ server <- function(input, output, session) {
     } else if (battle_state$mode == 1 && battle_state$c1$hp > 0 && battle_state$opponent_idx < 6) {
       battle_state$opponent_idx <- battle_state$opponent_idx + 1
       c1 <- battle_state$c1; c1$hp <- input$m1_hp; battle_state$c1 <- c1
-      opp <- OPPONENTS[[battle_state$opponent_idx]]; opp$id <- "c2"
+      opp <- battle_state$opps[[battle_state$opponent_idx]]; opp$id <- "c2"
       battle_state$c2 <- opp
       battle_state$turn <- 1; battle_state$finished <- FALSE
       battle_state$log <- paste0(battle_state$log, "=== 第", battle_state$opponent_idx, "戦 vs ", opp$name, "（", opp$title, "） ===\n",
