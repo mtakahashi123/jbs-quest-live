@@ -45,7 +45,7 @@ ui <- fluidPage(
       "任意のヒットポイント，攻撃力，守備力，素早さのキャラクターを生成してバトルさせる無料のオンラインゲームです．", br(),
       "それぞれのステータスの最小値は0，最大値は100ですが，4つのステータスの合計値は100以下でなければなりません．", br(),
       br(),
-      "モード1では，あなたのキャラクターが6人の強豪と戦って，6連勝したらクリアです．", br(),
+      "モード1では，あなたのキャラクターが7人の強豪と戦って，7連勝したらクリアです．", br(),
       "モード2では，任意のステータスをもつ2つのキャラクターを自由に対戦させることができます．", br(),
       br(),
       "すべて入力し終えたら，「チャレンジ開始!」ボタンまたは「対戦開始!」ボタンを押してください．", br(),
@@ -60,7 +60,7 @@ ui <- fluidPage(
   hr(),
   
   tabsetPanel(
-    tabPanel("モード1: 6連勝チャレンジ",
+    tabPanel("モード1: 7連勝チャレンジ",
              sidebarLayout(
                sidebarPanel(width = 4,
                             textInput("m1_name", "あなたのキャラクターの名前", value = ""),
@@ -107,7 +107,10 @@ ui <- fluidPage(
       "注意事項：本ゲームは，1980年代後半に『週刊少年ジャンプ』の読者投稿コーナー「ジャンプ放送局」にて行われた「JBSクエスト」へのリスペクトを込めて制作された，ファンによる非公式の二次創作（トリビュート作品）です．", br(),
       "独自性について：当時のソースコードは非公開のため，本ゲームはJBSクエストを完全再現したものではなく，製作者がR言語を用いて独自に構築したアルゴリズムに基づいています．", br(),
       "権利関係について：株式会社集英社および当時の制作関係者様とは一切関係ありません．", br(),
-      "データの引用について：モード1のキャラクター名およびパラメータ等のデータは，歴史的な記録を振り返る目的で，当時の誌面（『週刊少年ジャンプ』1989年43号～45号，1990年33号～35号）で公開された情報より引用しています．"
+      "データの引用について：モード1のキャラクター名およびパラメータ等のデータは，歴史的な記録を振り返る目的で，当時の誌面（『週刊少年ジャンプ』1989年43号～45号，1990年33号～35号）で公開された情報より引用しています．", br(),
+      br(),
+      "Last Updated: Sys.time()"
+      
   )
 )
 
@@ -191,8 +194,8 @@ server <- function(input, output, session) {
       battle_state$finished <- TRUE
       winner <- if(c1$hp > 0) c1$name else c2$name
       battle_state$log <- paste0(battle_state$log, ">>>> ", winner, " の勝利！\n")
-      if (battle_state$mode == 1 && winner == c1$name && battle_state$opponent_idx == 6) {
-        battle_state$log <- paste0(battle_state$log, "\n祝！！ 6連勝達成！ あなたが真の王者です！\n")
+      if (battle_state$mode == 1 && winner == c1$name && battle_state$opponent_idx == 7) {
+        battle_state$log <- paste0(battle_state$log, "\n祝！！ 7連勝達成！ あなたが真の王者です！\n")
       }
     }
   }
@@ -201,20 +204,40 @@ server <- function(input, output, session) {
     req(is.null(check_stats(input$m1_name, input$m1_hp, input$m1_atk, input$m1_def, input$m1_spd)))
     
     # --- 対戦相手のランダム選出 ---
-    r1 <- round(runif(1, 0.5, 4.4999), 0)
+    r1 <- sample(c(1:8), 1)
     if(r1 == 1){
-      OPPONENT2 <- list(name = "らっかせーキング", title = "JBSクエスト ベスト4", hp=42, atk=40, def=3, spd=15)
+      OPPONENT2 <- list(name = "ザえびふりゃあ", title = "JBSクエスト ベスト8", hp=45, atk=38, def=10, spd=0)
     }else if(r1 == 2){
-      OPPONENT2 <- list(name = "てつびん２８ごう", title = "JBSクエスト ベスト4", hp=42, atk=15, def=35, spd=8)
+      OPPONENT2 <- list(name = "しんじゅへび", title = "JBSクエスト ベスト8", hp=51, atk=29, def=12, spd=8)
     }else if(r1 == 3){
-      OPPONENT2 <- list(name = "スーちゃんくじら", title = "JBSクエスト2 ベスト4", hp=30, atk=35, def=30, spd=5)
+      OPPONENT2 <- list(name = "かつおドラゴン", title = "JBSクエスト ベスト8", hp=37, atk=21, def=35, spd=7)
     }else if(r1 == 4){
-      OPPONENT2 <- list(name = "こっかいぎじろう", title = "JBSクエスト2 ベスト4", hp=25, atk=45, def=5, spd=25)
+      OPPONENT2 <- list(name = "メタルこしひかり", title = "JBSクエスト ベスト8", hp=21, atk=13, def=65, spd=1)
+    }else if(r1 == 5){
+      OPPONENT2 <- list(name = "だいもんじやま", title = "JBSクエスト2 ベスト8", hp=30, atk=30, def=40, spd=0)
+    }else if(r1 == 6){
+      OPPONENT2 <- list(name = "はなのあきんど", title = "JBSクエスト2 ベスト8", hp=25, atk=32, def=40, spd=3)
+    }else if(r1 == 7){
+      OPPONENT2 <- list(name = "ムシャササニシキ", title = "JBSクエスト2 ベスト8", hp=35, atk=25, def=25, spd=15)
+    }else if(r1 == 8){
+      OPPONENT2 <- list(name = "ぶっちゅ～りっぷ", title = "JBSクエスト2 ベスト8", hp=30, atk=30, def=20, spd=20)
+    }
+    
+    r2 <- sample(c(1:4), 1)
+    if(r2 == 1){
+      OPPONENT3 <- list(name = "らっかせーキング", title = "JBSクエスト ベスト4", hp=42, atk=40, def=3, spd=15)
+    }else if(r2 == 2){
+      OPPONENT3 <- list(name = "てつびん２８ごう", title = "JBSクエスト ベスト4", hp=42, atk=15, def=35, spd=8)
+    }else if(r2 == 3){
+      OPPONENT3 <- list(name = "スーちゃんくじら", title = "JBSクエスト2 ベスト4", hp=30, atk=35, def=30, spd=5)
+    }else if(r2 == 4){
+      OPPONENT3 <- list(name = "こっかいぎじろう", title = "JBSクエスト2 ベスト4", hp=25, atk=45, def=5, spd=25)
     }
     
     battle_state$opps <- list(
       list(name = "のみ003", title = "JBSクエスト 福岡代表", hp=1, atk=1, def=0, spd=98),
       OPPONENT2,
+      OPPONENT3,
       list(name = "ラッシュやまのて", title = "JBSクエスト 準優勝", hp=34, atk=33, def=33, spd=0),
       list(name = "しらはまのすな", title = "JBSクエスト2 準優勝", hp=28, atk=48, def=12, spd=12),
       list(name = "いかりのひでよし", title = "JBSクエスト 優勝", hp=26, atk=36, def=36, spd=2),
@@ -239,7 +262,7 @@ server <- function(input, output, session) {
   observeEvent(input$next_turn, {
     if (!battle_state$finished) {
       execute_turn()
-    } else if (battle_state$mode == 1 && battle_state$c1$hp > 0 && battle_state$opponent_idx < 6) {
+    } else if (battle_state$mode == 1 && battle_state$c1$hp > 0 && battle_state$opponent_idx < 7) {
       battle_state$opponent_idx <- battle_state$opponent_idx + 1
       c1 <- battle_state$c1; c1$hp <- input$m1_hp; battle_state$c1 <- c1
       opp <- battle_state$opps[[battle_state$opponent_idx]]; opp$id <- "c2"
@@ -256,7 +279,7 @@ server <- function(input, output, session) {
   
   btn_ui <- function(mode) {
     if(!battle_state$active || battle_state$mode != mode) return(NULL)
-    if(battle_state$finished && (mode == 2 || (mode == 1 && (battle_state$c1$hp <= 0 || battle_state$opponent_idx == 6)))) return(NULL)
+    if(battle_state$finished && (mode == 2 || (mode == 1 && (battle_state$c1$hp <= 0 || battle_state$opponent_idx == 7)))) return(NULL)
     label <- if(battle_state$finished) "次の試合へ進む" else "次のターンへ"
     actionButton("next_turn", label, class = "btn-warning", style="margin-top:10px; width:100%;")
   }
@@ -268,15 +291,15 @@ server <- function(input, output, session) {
     if (!battle_state$finished) return(NULL)
     
     if (battle_state$mode == 1) {
-      is_final_win <- (battle_state$opponent_idx == 6 && battle_state$c1$hp > 0)
+      is_final_win <- (battle_state$opponent_idx == 7 && battle_state$c1$hp > 0)
       is_loss <- (battle_state$c1$hp <= 0)
       if (!(is_final_win || is_loss)) return(NULL)
     }
     
     winner_name <- if(battle_state$c1$hp > 0) battle_state$c1$name else battle_state$c2$name
     
-    msg <- if(battle_state$mode == 1 && battle_state$opponent_idx == 6 && battle_state$c1$hp > 0) {
-      paste0("JBSクエスト・トリビュートで6連勝達成！王者は「", winner_name, "」だ！")
+    msg <- if(battle_state$mode == 1 && battle_state$opponent_idx == 7 && battle_state$c1$hp > 0) {
+      paste0("JBSクエスト・トリビュートで7連勝達成！王者は「", winner_name, "」だ！")
     } else {
       paste0("JBSクエスト・トリビュートで「", winner_name, "」が勝利しました！")
     }
