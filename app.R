@@ -158,7 +158,18 @@ server <- function(input, output, session) {
             action_msg <- "しかし かわされた！"
           } else {
             base_dmg <- atk_unit$atk - def_unit$def
-            damage <- round(base_dmg + runif(1, -abs(base_dmg)/16, abs(base_dmg)/16))
+            
+            # --- 変動値の計算と調整 ---
+            rnd_val <- runif(1, -abs(base_dmg)/16, abs(base_dmg)/16)
+            if (rnd_val > -1 && rnd_val < 0) {
+              rnd_val <- -1
+            } else if (rnd_val == 0) {
+              rnd_val <- if(runif(1) < 0.5) -1 else 1
+            } else if (rnd_val >= 0 && rnd_val < 1) {
+              rnd_val <- 1
+            }
+            
+            damage <- round(base_dmg + rnd_val)
             
             # --- ダメージ最低1ポイント保証 ---
             if (damage < 1) damage <- 1
