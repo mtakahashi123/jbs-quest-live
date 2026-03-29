@@ -145,7 +145,7 @@ server <- function(input, output, session) {
         if (atk_unit$hp <= 0) next
         
         # --- 2回連続攻撃の判定 ---
-        prob_double <- max(0, (atk_unit$spd - def_unit$spd) / 100)
+        prob_double <- max(0, (atk_unit$spd - def_unit$spd) / 100) * 0.5
         num_attacks <- if(runif(1) < prob_double) 2 else 1
         
         if(num_attacks == 2) msg <- paste0(msg, atk_unit$name, " の2回連続攻撃！\n")
