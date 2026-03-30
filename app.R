@@ -109,7 +109,7 @@ ui <- fluidPage(
       "権利関係について：株式会社集英社および当時の制作関係者様とは一切関係ありません．", br(),
       "データの引用について：モード1のキャラクター名およびパラメータ等のデータは，歴史的な記録を振り返る目的で，当時の誌面（『週刊少年ジャンプ』1989年43号～45号，1990年33号～35号）で公開された情報より引用しています．", br(),
       br(),
-      "最終更新日時：2026年3月30日 15:39"
+      "最終更新日時：2026年3月30日 15:52"
   )
 )
 
@@ -141,7 +141,7 @@ server <- function(input, output, session) {
     c1 <- battle_state$c1; c2 <- battle_state$c2
     if (c1$hp > 0 && c2$hp > 0) {
       msg <- paste0("[ターン ", battle_state$turn, "]\n")
-      order <- if ((c1$spd * runif(1)) >= (c2$spd * runif(1))) list(c1, c2) else list(c2, c1)
+      order <- if (((c1$spd + 1) * runif(1)) >= ((c2$spd + 1) * runif(1))) list(c1, c2) else list(c2, c1)
       for (i in 1:2) {
         atk_unit <- order[[i]]; def_unit <- if(i==1) order[[2]] else order[[1]]
         if (atk_unit$hp <= 0) next
