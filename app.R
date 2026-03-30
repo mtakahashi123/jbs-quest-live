@@ -109,7 +109,7 @@ ui <- fluidPage(
       "権利関係について：株式会社集英社および当時の制作関係者様とは一切関係ありません．", br(),
       "データの引用について：モード1のキャラクター名およびパラメータ等のデータは，歴史的な記録を振り返る目的で，当時の誌面（『週刊少年ジャンプ』1989年43号～45号，1990年33号～35号）で公開された情報より引用しています．", br(),
       br(),
-      "最終更新日時：2026年3月30日 12:23"
+      "最終更新日時：2026年3月30日 15:39"
   )
 )
 
@@ -165,9 +165,9 @@ server <- function(input, output, session) {
             rnd_val <- round(rnorm(1, 0, 1), 0)
             
             damage <- round(base_dmg + rnd_val)          
-            if (damage == 2 && atk_unit$atk > 0) damage <- sample(c(2, 3), 1)
-            if (damage == 1 && atk_unit$atk > 0) damage <- sample(c(1, 2, 3), 1)
-            if (damage <= 0 && atk_unit$atk > 0) damage <- sample(c(0, 1, 2), 1)
+            if (damage == 2 && atk_unit$atk > 0) damage <- sample(c(2, 2, 3), 1)
+            if (damage == 1 && atk_unit$atk > 0) damage <- sample(c(1, 1, 1, 2, 2, 3), 1)
+            if (damage <= 0 && atk_unit$atk > 0) damage <- sample(c(0, 0, 0, 1, 1, 2), 1)
             if (atk_unit$atk == 0) damage <- 0
             
             def_unit$hp <- max(0, def_unit$hp - damage)
