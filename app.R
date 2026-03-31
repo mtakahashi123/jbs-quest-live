@@ -107,9 +107,9 @@ ui <- fluidPage(
       "注意事項：本ゲームは，1980年代後半に『週刊少年ジャンプ』の読者投稿コーナー「ジャンプ放送局」にて行われた「JBSクエスト」へのリスペクトを込めて制作された，ファンによる非公式の二次創作（トリビュート作品）です．", br(),
       "独自性について：当時のソースコードは非公開のため，本ゲームはJBSクエストを完全再現したものではなく，製作者がR言語を用いて独自に構築したアルゴリズムに基づいています．", br(),
       "権利関係について：株式会社集英社および当時の制作関係者様とは一切関係ありません．", br(),
-      "データの引用について：モード1のキャラクター名およびパラメータ等のデータは，歴史的な記録を振り返る目的で，当時の誌面（『週刊少年ジャンプ』1989年43号～45号，1990年33号～35号）で公開された情報より引用しています．", br(),
+      "データの引用について：モード1のキャラクター名およびパラメータ等のデータは，歴史的な記録を振り返る目的で，当時の誌面（『週刊少年ジャンプ』1989年10月9日号：408～413頁，10月16日号：402～407頁，10月23日号：418～423頁，1990年7月30日号：402～407頁，8月6日号：402～407頁，8月13日号：432～437頁）で公開された情報より引用しています．", br(),
       br(),
-      "最終更新日時：2026年3月31日 23:02"
+      "最終更新日時：2026年3月31日 23:27"
   )
 )
 
@@ -215,7 +215,7 @@ server <- function(input, output, session) {
     if(r2 == 1){
       OPPONENT3 <- list(name = "らっかせーキング", title = "JBSクエスト ベスト4", hp=42, atk=40, def=3, spd=15)
     }else if(r2 == 2){
-      OPPONENT3 <- list(name = "てつびん２８ごう", title = "JBSクエスト ベスト4", hp=42, atk=15, def=35, spd=8)
+      OPPONENT3 <- list(name = "てつびん28ごう", title = "JBSクエスト ベスト4", hp=42, atk=15, def=35, spd=8)
     }else if(r2 == 3){
       OPPONENT3 <- list(name = "スーちゃんくじら", title = "JBSクエスト2 ベスト4", hp=30, atk=35, def=30, spd=5)
     }else if(r2 == 4){
@@ -229,7 +229,7 @@ server <- function(input, output, session) {
       list(name = "ラッシュやまのて", title = "JBSクエスト 準優勝", hp=34, atk=33, def=33, spd=0),
       list(name = "しらはまのすな", title = "JBSクエスト2 準優勝", hp=28, atk=48, def=12, spd=12),
       list(name = "いかりのひでよし", title = "JBSクエスト 優勝", hp=26, atk=36, def=36, spd=2),
-      list(name = "うっ☆マンボ", title = "JBSクエスト2 優勝", hp=26, atk=38, def=32, spd=4)
+      list(name = "うっ・マンボ", title = "JBSクエスト2 優勝", hp=26, atk=38, def=32, spd=4)
     )
     
     battle_state$active <- TRUE; battle_state$mode <- 1; battle_state$opponent_idx <- 1; battle_state$turn <- 1; battle_state$finished <- FALSE
