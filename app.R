@@ -34,7 +34,12 @@ ui <- fluidPage(
     ")),
     tags$script(HTML("
       $(document).on('shiny:connected', function() {
-        setInterval(function() { $('.battle-log').each(function() { this.scrollTop = this.scrollHeight; }); }, 200);
+        setInterval(function() { 
+          // 戦闘中のみ自動スクロール
+          if ($('.btn-share').length === 0) {
+            $('.battle-log').each(function() { this.scrollTop = this.scrollHeight; }); 
+          }
+        }, 200);
       });
     "))
   ),
@@ -52,10 +57,10 @@ ui <- fluidPage(
       "「次のターンへ」ボタンを押すと，戦闘の様子が1ターンずつ表示されます．", br(),
       "パソコンでは画面の右に，スマホでは画面の下に戦闘ログが表示されます．", br(),
       br(),
-      "JBSクエスト・トリビュートのアルゴリズムの考え方と根拠については，",tags$a(href="https://sites.google.com/view/takahashistat/profile/jbsquesttribute", "JBSクエスト・トリビュートのアルゴリズム", target="_blank", rel="noopener noreferrer"),"において説明をしています．", br(),
+      "JBSクエスト・トリビュートのアルゴリズムの考え方と根拠については，",tags$a(href="https://sites.google.com/view/takahashistat/profile/jbsquesttribute", "JBSクエスト・トリビュートのアルゴリズム", target="_blank", rel="noopener noreferrer"),"で説明しています．", br(),
       br(),
       "キャラクターのステータス設定について悩む方は，",tags$a(href="https://jbsmemorial.sakura.ne.jp/etc/quest1.html", "JBSクエストの記録", target="_blank", rel="noopener noreferrer"),"と",
-      tags$a(href="https://jbsmemorial.sakura.ne.jp/etc/quest2.html", "JBSクエスト2の記録", target="_blank", rel="noopener noreferrer"),"も参考にしてください（外部サイトです）．"
+      tags$a(href="https://jbsmemorial.sakura.ne.jp/etc/quest2.html", "JBSクエスト2の記録", target="_blank", rel="noopener noreferrer"),"も参考にしてください．（外部サイトです）"
       
   ),
   
@@ -65,6 +70,8 @@ ui <- fluidPage(
     tabPanel("モード1: 7連勝チャレンジ",
              sidebarLayout(
                sidebarPanel(width = 4,
+                            # 計算アルゴリズム選択
+                            radioButtons("m1_algo", "計算アルゴリズムを選択", choices = c("JBSクエスト仕様" = "v1", "JBSクエストII仕様" = "v2"), inline = TRUE),
                             textInput("m1_name", "あなたのキャラクターの名前", value = ""),
                             numericInput("m1_hp", "ヒットポイント(HP)", value = NA, min = 0),
                             numericInput("m1_atk", "攻撃力(ATK)", value = NA, min = 0),
@@ -84,6 +91,8 @@ ui <- fluidPage(
     tabPanel("モード2: 自由対戦",
              sidebarLayout(
                sidebarPanel(width = 4,
+                            # 計算アルゴリズム選択
+                            radioButtons("m2_algo", "計算アルゴリズムを選択", choices = c("JBSクエスト仕様" = "v1", "JBSクエストII仕様" = "v2"), inline = TRUE),
                             fluidRow(
                               column(6, textInput("m2_n1", "キャラ1の名前", ""), numericInput("m2_h1", "ヒットポイント(HP)", NA), numericInput("m2_a1", "攻撃力(ATK)", NA), numericInput("m2_d1", "守備力(DEF)", NA), numericInput("m2_s1", "素早さ(SPD)", NA)),
                               column(6, textInput("m2_n2", "キャラ2の名前", ""), numericInput("m2_h2", "ヒットポイント(HP)", NA), numericInput("m2_a2", "攻撃力(ATK)", NA), numericInput("m2_d2", "守備力(DEF)", NA), numericInput("m2_s2", "素早さ(SPD)", NA))
@@ -111,13 +120,13 @@ ui <- fluidPage(
       "権利関係について：株式会社集英社および当時の制作関係者様とは一切関係ありません．", br(),
       "データの引用について：モード1のキャラクター名およびパラメータ等のデータは，歴史的な記録を振り返る目的で，当時の誌面（「ジャンプ放送局」『週刊少年ジャンプ』1989年10月9日号 408～413頁，1989年10月16日号 402～407頁，1989年10月23日号 418～423頁，1990年7月30日号 402～407頁，1990年8月6日号 402～407頁，1990年8月13日号 432～437頁）で公開された情報より引用しています．", br(),
       br(),
-      "最終更新日時：2026年4月1日 11:58"
+      "最終更新日時：2026年4月1日 13:14"
   )
 )
 
 # --- サーバ ---
 server <- function(input, output, session) {
-  battle_state <- reactiveValues(active = FALSE, mode = 0, c1 = NULL, c2 = NULL, turn = 1, opponent_idx = 1, log = "", finished = FALSE, opps = NULL)
+  battle_state <- reactiveValues(active = FALSE, mode = 0, algo = "v1", c1 = NULL, c2 = NULL, turn = 1, opponent_idx = 1, log = "", finished = FALSE, opps = NULL)
   
   check_stats <- function(n, h, a, d, s) {
     if (n == "" || any(is.na(c(h, a, d, s)))) return("全項目入力が必要です")
@@ -143,7 +152,14 @@ server <- function(input, output, session) {
     c1 <- battle_state$c1; c2 <- battle_state$c2
     if (c1$hp > 0 && c2$hp > 0) {
       msg <- paste0("[ターン ", battle_state$turn, "]\n")
-      order <- if (((c1$spd + 1) * runif(1)) >= ((c2$spd + 1) * runif(1))) list(c1, c2) else list(c2, c1)
+      
+      # 先攻・後攻の判定（両者SPD = 0の場合は50%）
+      if (c1$spd == 0 && c2$spd == 0) {
+        order <- if (runif(1) < 0.5) list(c1, c2) else list(c2, c1)
+      } else {
+        order <- if ((c1$spd * runif(1)) >= (c2$spd * runif(1))) list(c1, c2) else list(c2, c1)
+      }
+      
       for (i in 1:2) {
         atk_unit <- order[[i]]; def_unit <- if(i==1) order[[2]] else order[[1]]
         if (atk_unit$hp <= 0) next
@@ -161,7 +177,13 @@ server <- function(input, output, session) {
           if (runif(1, 0, 100) < evasion_rate) {
             action_msg <- "しかし かわされた！"
           } else {
-            base_dmg <- 2.72924 + 0.21367*(atk_unit$atk - def_unit$def) + rnorm(1, 0, 1.604484)
+            # ベースダメージ計算式の選択
+            if (battle_state$algo == "v1") {
+              base_dmg <- 2.72924 + 0.21367*(atk_unit$atk - def_unit$def) + rnorm(1, 0, 1.604484)
+            } else {
+              base_dmg <- 9.4185 + 0.5963*(atk_unit$atk - def_unit$def) + rnorm(1, 0, 6.819)
+            }
+            
             damage <- round(base_dmg)          
             if (damage <= 0 && atk_unit$atk > 0) damage <- 1
             if (atk_unit$atk == 0) damage <- 0
@@ -234,18 +256,19 @@ server <- function(input, output, session) {
       list(name = "うっ・マンボ", title = "JBSクエスト2 優勝", hp=26, atk=38, def=32, spd=4)
     )
     
-    battle_state$active <- TRUE; battle_state$mode <- 1; battle_state$opponent_idx <- 1; battle_state$turn <- 1; battle_state$finished <- FALSE
-    battle_state$c1 <- list(id="c1", name=input$m1_name, hp=input$m1_hp, atk=input$m1_atk, def=input$m1_def, spd=input$m1_spd)
-    opp <- battle_state$opps[[1]]; opp$id <- "c2"
+    battle_state$active <- TRUE; battle_state$mode <- 1; battle_state$algo <- input$m1_algo; battle_state$opponent_idx <- 1; battle_state$turn <- 1; battle_state$finished <- FALSE
+    # hp_max を保持しておく（シェアボタン用）
+    battle_state$c1 <- list(id="c1", name=input$m1_name, hp=input$m1_hp, hp_max=input$m1_hp, atk=input$m1_atk, def=input$m1_def, spd=input$m1_spd)
+    opp <- battle_state$opps[[1]]; opp$id <- "c2"; opp$hp_max <- opp$hp
     battle_state$c2 <- opp
     battle_state$log <- paste0("=== チャレンジ開始 vs ", opp$name, "（", opp$title, "） ===\n", fmt_stats(battle_state$c1), "\n", fmt_stats(opp), "\n\n")
   })
   
   observeEvent(input$start_m2, {
     req(is.null(check_stats(input$m2_n1, input$m2_h1, input$m2_a1, input$m2_d1, input$m2_s1)))
-    battle_state$active <- TRUE; battle_state$mode <- 2; battle_state$turn <- 1; battle_state$finished <- FALSE
-    battle_state$c1 <- list(id="c1", name=input$m2_n1, hp=input$m2_h1, atk=input$m2_a1, def=input$m2_d1, spd=input$m2_s1)
-    battle_state$c2 <- list(id="c2", name=input$m2_n2, hp=input$m2_h2, atk=input$m2_a2, def=input$m2_d2, spd=input$m2_s2)
+    battle_state$active <- TRUE; battle_state$mode <- 2; battle_state$algo <- input$m2_algo; battle_state$turn <- 1; battle_state$finished <- FALSE
+    battle_state$c1 <- list(id="c1", name=input$m2_n1, hp=input$m2_h1, hp_max=input$m2_h1, atk=input$m2_a1, def=input$m2_d1, spd=input$m2_s1)
+    battle_state$c2 <- list(id="c2", name=input$m2_n2, hp=input$m2_h2, hp_max=input$m2_h2, atk=input$m2_a2, def=input$m2_d2, spd=input$m2_s2)
     battle_state$log <- paste0("--- 自由対戦開始 ---\n", fmt_stats(battle_state$c1), "\n", fmt_stats(battle_state$c2), "\n\n")
   })
   
@@ -255,7 +278,7 @@ server <- function(input, output, session) {
     } else if (battle_state$mode == 1 && battle_state$c1$hp > 0 && battle_state$opponent_idx < 7) {
       battle_state$opponent_idx <- battle_state$opponent_idx + 1
       c1 <- battle_state$c1; c1$hp <- input$m1_hp; battle_state$c1 <- c1
-      opp <- battle_state$opps[[battle_state$opponent_idx]]; opp$id <- "c2"
+      opp <- battle_state$opps[[battle_state$opponent_idx]]; opp$id <- "c2"; opp$hp_max <- opp$hp
       battle_state$c2 <- opp
       battle_state$turn <- 1; battle_state$finished <- FALSE
       battle_state$log <- paste0(battle_state$log, "=== 第", battle_state$opponent_idx, "戦 vs ", opp$name, "（", opp$title, "） ===\n",
@@ -286,12 +309,14 @@ server <- function(input, output, session) {
       if (!(is_final_win || is_loss)) return(NULL)
     }
     
-    winner_name <- if(battle_state$c1$hp > 0) battle_state$c1$name else battle_state$c2$name
+    # 勝者の名前とステータスを生成
+    winner <- if(battle_state$c1$hp > 0) battle_state$c1 else battle_state$c2
+    winner_info <- paste0(winner$name, " (HP:", winner$hp_max, " ATK:", winner$atk, " DEF:", winner$def, " SPD:", winner$spd, ")")
     
     msg <- if(battle_state$mode == 1 && battle_state$opponent_idx == 7 && battle_state$c1$hp > 0) {
-      paste0("JBSクエスト・トリビュートで7連勝達成！王者は「", winner_name, "」だ！")
+      paste0("JBSクエスト・トリビュートで7連勝達成！王者は「", winner_info, "」だ！")
     } else {
-      paste0("JBSクエスト・トリビュートで「", winner_name, "」が勝利しました！")
+      paste0("JBSクエスト・トリビュートで「", winner_info, "」が勝利しました！")
     }
     
     # LINE内ブラウザ対策として openExternalBrowser=1 を付与
