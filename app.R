@@ -52,7 +52,7 @@ ui <- fluidPage(
       "「次のターンへ」ボタンを押すと，戦闘の様子が1ターンずつ表示されます．", br(),
       "パソコンでは画面の右に，スマホでは画面の下に戦闘ログが表示されます．", br(),
       br(),
-      "JBSクエスト・トリビュートのアルゴリズムの考え方と根拠については，",tags$a(href="https://sites.google.com/view/takahashistat/profile/jbsquesttribute", "JBSクエスト・トリビュートのアルゴリズム", target="_blank", rel="noopener noreferrer"),"において説明をしています．"
+      "JBSクエスト・トリビュートのアルゴリズムの考え方と根拠については，",tags$a(href="https://sites.google.com/view/takahashistat/profile/jbsquesttribute", "JBSクエスト・トリビュートのアルゴリズム", target="_blank", rel="noopener noreferrer"),"において説明をしています．", br(),
       br(),
       "キャラクターのステータス設定について悩む方は，",tags$a(href="https://jbsmemorial.sakura.ne.jp/etc/quest1.html", "JBSクエストの記録", target="_blank", rel="noopener noreferrer"),"と",
       tags$a(href="https://jbsmemorial.sakura.ne.jp/etc/quest2.html", "JBSクエスト2の記録", target="_blank", rel="noopener noreferrer"),"も参考にしてください．"
