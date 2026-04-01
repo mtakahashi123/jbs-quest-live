@@ -36,8 +36,7 @@ ui <- fluidPage(
       $(document).on('shiny:connected', function() {
         setInterval(function() { 
           $('.battle-log:visible').each(function() {
-           var atBottom = this.scrollHeight - this.scrollTop <= this.clientHeight + 1;
-            if ($('.tab-pane.active .btn-share').length === 0 || !atBottom) {
+           if ($('.tab-pane.active .btn-share').length === 0) {
               this.scrollTop = this.scrollHeight;
             }
           });
@@ -123,7 +122,7 @@ ui <- fluidPage(
       "権利関係について：株式会社集英社および当時の制作関係者様とは一切関係ありません．", br(),
       "データの引用について：モード1のキャラクター名およびパラメータ等のデータは，歴史的な記録を振り返る目的で，当時の誌面（「ジャンプ放送局」『週刊少年ジャンプ』1989年10月9日号 408～413頁，1989年10月16日号 402～407頁，1989年10月23日号 418～423頁，1990年7月30日号 402～407頁，1990年8月6日号 402～407頁，1990年8月13日号 432～437頁）で公開された情報より引用しています．", br(),
       br(),
-      "最終更新日時：2026年4月1日 14:25"
+      "最終更新日時：2026年4月1日 14:42"
   )
 )
 
