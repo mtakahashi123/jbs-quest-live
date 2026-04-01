@@ -65,10 +65,10 @@ ui <- fluidPage(
       "パソコンでは画面の右に，スマホでは画面の下に戦闘ログが表示されます．", br(),
       br(),
       "JBSクエスト・トリビュートのアルゴリズムの考え方と根拠については，",tags$a(href="https://sites.google.com/view/takahashistat/profile/jbsquesttribute", "JBSクエスト・トリビュートのアルゴリズム", target="_blank", rel="noopener noreferrer"),"で説明しています．", br(),
-      "なお，JBSクエストとJBSクエストIIのダメージ計算のアルゴリズムは異なるので，JBSクエスト・トリビュートでは，仕様を選択できるようにしています．", br(),
+      "なお，JBSクエストとJBSクエストIIのダメージ計算のアルゴリズムは異なるので，JBSクエスト・トリビュートでは，仕様を選択できるようにしています．戦闘中に計算アルゴリズムを選びなおしても，戦闘終了まで最初に選んだアルゴリズムで計算が行われます．", br(),
       br(),
-      "キャラクターのステータス設定について悩む方は，",tags$a(href="https://jbsmemorial.sakura.ne.jp/etc/quest1.html", "JBSクエストの記録", target="_blank", rel="noopener noreferrer"),"と",
-      tags$a(href="https://jbsmemorial.sakura.ne.jp/etc/quest2.html", "JBSクエスト2の記録", target="_blank", rel="noopener noreferrer"),"も参考にしてください．（外部サイトです）"
+      "JBSクエストについて詳しく知りたい方は，",tags$a(href="https://jbsmemorial.sakura.ne.jp/etc/quest1.html", "JBSクエストの記録", target="_blank", rel="noopener noreferrer"),"と",
+      tags$a(href="https://jbsmemorial.sakura.ne.jp/etc/quest2.html", "JBSクエスト2の記録", target="_blank", rel="noopener noreferrer"),"を参考にしてください（外部サイトです）．"
       
   ),
   
@@ -128,7 +128,7 @@ ui <- fluidPage(
       "権利関係について：株式会社集英社および当時の制作関係者様とは一切関係ありません．", br(),
       "データの引用について：モード1のキャラクター名およびパラメータ等のデータは，歴史的な記録を振り返る目的で，当時の誌面（「ジャンプ放送局」『週刊少年ジャンプ』1989年10月9日号 408～413頁，1989年10月16日号 402～407頁，1989年10月23日号 418～423頁，1990年7月30日号 402～407頁，1990年8月6日号 402～407頁，1990年8月13日号 432～437頁）で公開された情報より引用しています．", br(),
       br(),
-      "最終更新日時：2026年4月1日 15:56"
+      "最終更新日時：2026年4月1日 17:36"
   )
 )
 
