@@ -35,10 +35,12 @@ ui <- fluidPage(
     tags$script(HTML("
       $(document).on('shiny:connected', function() {
         setInterval(function() { 
-          // 戦闘中のみ自動スクロール
-          if ($('.btn-share').length === 0) {
-            $('.battle-log').each(function() { this.scrollTop = this.scrollHeight; }); 
-          }
+          $('.battle-log:visible').each(function() {
+           var atBottom = this.scrollHeight - this.scrollTop <= this.clientHeight + 1;
+            if ($('.tab-pane.active .btn-share').length === 0 || !atBottom) {
+              this.scrollTop = this.scrollHeight;
+            }
+          });
         }, 200);
       });
     "))
@@ -121,7 +123,7 @@ ui <- fluidPage(
       "権利関係について：株式会社集英社および当時の制作関係者様とは一切関係ありません．", br(),
       "データの引用について：モード1のキャラクター名およびパラメータ等のデータは，歴史的な記録を振り返る目的で，当時の誌面（「ジャンプ放送局」『週刊少年ジャンプ』1989年10月9日号 408～413頁，1989年10月16日号 402～407頁，1989年10月23日号 418～423頁，1990年7月30日号 402～407頁，1990年8月6日号 402～407頁，1990年8月13日号 432～437頁）で公開された情報より引用しています．", br(),
       br(),
-      "最終更新日時：2026年4月1日 13:53"
+      "最終更新日時：2026年4月1日 14:25"
   )
 )
 
@@ -301,8 +303,8 @@ server <- function(input, output, session) {
   output$next_btn_ui_m2 <- renderUI({ btn_ui(2) })
   
   # --- SNSシェアボタンの生成 ---
-  create_share_button <- function() {
-    if (!battle_state$finished) return(NULL)
+  create_share_button <- function(target_mode) {
+    if (!battle_state$finished || battle_state$mode != target_mode) return(NULL)
     
     if (battle_state$mode == 1) {
       is_final_win <- (battle_state$opponent_idx == 7 && battle_state$c1$hp > 0)
@@ -330,8 +332,8 @@ server <- function(input, output, session) {
     tags$a(href = tweet_url, class = "btn btn-share", target = "_blank", "結果をXでシェア")
   }
   
-  output$share_ui_m1 <- renderUI({ create_share_button() })
-  output$share_ui_m2 <- renderUI({ create_share_button() })
+  output$share_ui_m1 <- renderUI({ create_share_button(1) })
+  output$share_ui_m2 <- renderUI({ create_share_button(2) })
 }
 
 shinyApp(ui = ui, server = server)
