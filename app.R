@@ -189,7 +189,7 @@ server <- function(input, output, session) {
             if (battle_state$algo == "v1") {
               base_dmg <- 2.72924 + 0.21367*(atk_unit$atk - def_unit$def) + rnorm(1, 0, 1.604484)
             } else {
-              base_dmg <- 11.3183 + 0.4197*(atk_unit$atk - def_unit$def) + rnorm(1, 0, 4.895209)
+              base_dmg <- 10.8337 + 0.4511*(atk_unit$atk - def_unit$def) + rnorm(1, 0, 1.125326)
             }
             
             damage <- round(base_dmg)          
